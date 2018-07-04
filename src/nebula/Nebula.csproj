@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Nebula</AssemblyName>
+    <RootNamespace>Nebula</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="IRedisManager.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ComposerCore" Version="2.0.12" />
+    <PackageReference Include="hydrogen.General" Version="0.9.3" />
+    <PackageReference Include="log4net" Version="2.0.8" />
+    <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
+    <PackageReference Include="ServiceStack.Text" Version="5.1.0" />
+    <PackageReference Include="StackExchange.Redis" Version="1.2.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Job\" />
+  </ItemGroup>
+
+</Project>
