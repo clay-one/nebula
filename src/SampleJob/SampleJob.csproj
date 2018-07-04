@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Appson.JobQueue\Nebula.csproj" />
+    <ProjectReference Include="..\nebula\Nebula.csproj" />
   </ItemGroup>
 
 </Project>
