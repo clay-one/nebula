@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Nebula</id>
+    <version>1.0.0</version>
+    <title>Nebula</title>
+    <summary>Background worker for .NET Standard</summary>
+    <authors>clay-one</authors>
+    <owners>clay-one</owners>
+    <licenseUrl>https://github.com/clay-one/nebula.git</licenseUrl>
+    <projectUrl>https://github.com/clay-one/nebula.git</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>
+		Nebula is background worker for .NET Core and .NET Framework projects
+    </description>
+    <copyright>Copyright clay-one 2017</copyright>
+    <tags>Nebula dotnet</tags>
+	 <dependencies>
+		<dependency id="hydrogen.General" version="0.9.3" />
+    </dependencies>
+  </metadata>
+</package>
