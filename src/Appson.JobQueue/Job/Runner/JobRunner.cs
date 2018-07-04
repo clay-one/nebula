@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using ComposerCore.Attributes;
+using hydrogen.General.Collections;
 using log4net;
 using Nebula.Queue;
 using Nebula.Storage;

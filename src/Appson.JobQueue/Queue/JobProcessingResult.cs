@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using hydrogen.General.Collections;
 
 namespace Nebula.Queue
 {
