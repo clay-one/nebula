@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Nebula</id>
+    <id>clay-one.Nebula</id>
     <version>1.0.0</version>
     <title>Nebula</title>
     <summary>Background worker for .NET Standard</summary>
