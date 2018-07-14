@@ -262,6 +262,9 @@ namespace Nebula.Job.Implementation
             if (configuration.ExpiresAt.HasValue && configuration.ExpiresAt < DateTime.Now)
                 throw new ArgumentException("Job is already expired and cannot be added");
 
+            if(configuration.QueueDescriptor == null)
+                throw new ArgumentException("QueueDescriptor must be specified in job configuration");
+
             if (configuration.IdleSecondsToCompletion.HasValue)
                 configuration.IdleSecondsToCompletion = Math.Max(10, configuration.IdleSecondsToCompletion.Value);
 
