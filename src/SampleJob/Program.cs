@@ -67,13 +67,6 @@ namespace SampleJob
             composer.Configuration.DisableAttributeChecking = true;
             composer.Register(typeof(IJobQueue<>), typeof(RedisJobQueue<>));
 
-            // ReSharper disable UnusedVariable
-            var jobProcessor = composer.GetComponent<IJobProcessor<SampleJobStep>>();
-            var jobStore = composer.GetComponent<IJobStore>();
-            var jobRunnerManager = composer.GetComponent<IJobRunnerManager>();
-            var jobStatisticsCalculator = composer.GetComponent<JobStatisticsCalculator>();
-            var jobNotification = composer.GetComponent<IJobNotification>();
-
             return composer;
         }
     }
