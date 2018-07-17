@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
-using ComposerCore.Implementation;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nebula.Job;
-using Nebula.Queue;
-using Nebula.Queue.Implementation;
 using Nebula.Storage;
 using Nebula.Storage.Model;
+using Test.SampleJob;
+using Test.SampleJob.FirstJob;
+using Test.SampleJob.SecondJob;
 
 namespace Test
 {
@@ -21,8 +19,8 @@ namespace Test
         {
             var jobManager = Composer.GetComponent<IJobManager>();
 
-            await jobManager.CreateNewJobOrUpdateDefinition<SampleJobStep>(
-                string.Empty, "sample-job", nameof(SampleJobStep), new JobConfigurationData
+            await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(
+                string.Empty, "sample-job", nameof(FirstJobStep), new JobConfigurationData
                 {
                     MaxBatchSize = 100,
                     MaxConcurrentBatchesPerWorker = 5,
@@ -34,80 +32,60 @@ namespace Test
         [TestMethod]
         public async Task QueueTtpe_CreateCustome_Success()
         {
+            //create sample job with custom queue
             var jobManager = Composer.GetComponent<IJobManager>();
             var jobStore = Composer.GetComponent<IJobStore>();
-           
-            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<SampleJobStep>(
-                string.Empty, "sample-job", nameof(SampleJobStep), new JobConfigurationData
+
+            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(
+                string.Empty, "sample-job", nameof(FirstJobStep), new JobConfigurationData
                 {
                     MaxBatchSize = 100,
                     MaxConcurrentBatchesPerWorker = 5,
                     IsIndefinite = true,
                     MaxBlockedSecondsPerCycle = 300,
-                    QueueDescriptor = new SampleQueueDescriptor()
+                    QueueDescriptor = new FirstQueueDescriptor()
                 });
 
             var jobData = await jobStore.LoadFromAnyTenant(jobId);
-            var jobQueue = jobData.Configuration.QueueDescriptor.GetQueue<SampleJobStep>(Composer);
-            Assert.AreEqual(typeof(SampleJobQueue<SampleJobStep>), jobQueue.GetType());
+            var jobQueue = jobData.Configuration.QueueDescriptor.GetQueue<FirstJobStep>(Composer);
+            Assert.AreEqual(typeof(FirstJobQueue<FirstJobStep>), jobQueue.GetType());
         }
-        
-        #region entities
 
-        public class SampleJobStep : IJobStep
+        [TestMethod]
+        public async Task QueueTtpe_DifferentJobs_DifferentQueues()
         {
-            public int Number { get; set; }
+            //create sample job with custom queue
+            var jobManager = Composer.GetComponent<IJobManager>();
+            var jobStore = Composer.GetComponent<IJobStore>();
+
+            var firstJob = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(
+                string.Empty, "first-job", nameof(FirstJobStep), new JobConfigurationData
+                {
+                    MaxBatchSize = 100,
+                    MaxConcurrentBatchesPerWorker = 5,
+                    IsIndefinite = true,
+                    MaxBlockedSecondsPerCycle = 300,
+                    QueueDescriptor = new FirstQueueDescriptor()
+                });
+
+            var secondJob = await jobManager.CreateNewJobOrUpdateDefinition<SecondJobStep>(
+                string.Empty, "second-job", nameof(SecondJobStep), new JobConfigurationData
+                {
+                    MaxBatchSize = 100,
+                    MaxConcurrentBatchesPerWorker = 5,
+                    IsIndefinite = true,
+                    MaxBlockedSecondsPerCycle = 300,
+                    QueueDescriptor = new SecondQueueDescriptor()
+                });
+
+            var firstJobData = await jobStore.LoadFromAnyTenant(firstJob);
+            var firstJobQueue = firstJobData.Configuration.QueueDescriptor.GetQueue<FirstJobStep>(Composer);
+
+            var secondJobData = await jobStore.LoadFromAnyTenant(secondJob);
+            var secondJobQueue = secondJobData.Configuration.QueueDescriptor.GetQueue<SecondJobStep>(Composer);
+
+            Assert.AreEqual(typeof(FirstJobQueue<FirstJobStep>), firstJobQueue.GetType());
+            Assert.AreEqual(typeof(SecondJobQueue<SecondJobStep>), secondJobQueue.GetType());
         }
-
-        [Component]
-        [Contract]
-        public class SampleQueueDescriptor : QueueDescriptor<SampleJobStep>
-        {
-            public SampleQueueDescriptor() : base(typeof(SampleJobQueue<SampleJobStep>).AssemblyQualifiedName)
-            {
-            }
-        }
-
-        [Component]
-        [IgnoredOnAssemblyRegistration]
-        public class SampleJobQueue<TItem> : IJobQueue<TItem> where TItem : IJobStep
-        {
-            public Task EnsureJobQueueExists(string jobId = null)
-            {
-                return Task.CompletedTask;
-            }
-
-            public Task<long> GetQueueLength(string jobId = null)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task PurgeQueueContents(string jobId = null)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task Enqueue(TItem item, string jobId = null)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task EnqueueBatch(IEnumerable<TItem> items, string jobId = null)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<TItem> Dequeue(string jobId = null)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        #endregion
     }
 }
