@@ -1,5 +1,6 @@
 ﻿using System;
 using ComposerCore;
+using ComposerCore.Attributes;
 using Nebula.Queue;
 
 namespace Nebula.Storage.Model
@@ -12,22 +13,32 @@ namespace Nebula.Storage.Model
 
         public QueueDescriptor(string queueType)
         {
-            QueueType = queueType;
+            var type = Type.GetType(queueType);
+
+            QueueType = type.Name;
+            AssemblyQualifiedName = queueType;
         }
 
         public string QueueType { get; set; }
 
+        public string AssemblyQualifiedName { get; set; }
+
         public IJobQueue<TStep> GetQueue<TStep>(IComposer composer) where TStep : IJobStep
         {
-            return (IJobQueue<TStep>) composer.GetComponent(Type.GetType(QueueType));
+           return composer.GetComponent<IJobQueue<TStep>>(QueueType);
         }
     }
 
     public class QueueDescriptor<TStep> : QueueDescriptor where TStep : IJobStep
     {
+        public QueueDescriptor(string queueType) : base(queueType)
+        {
+
+        }
+
         public IJobQueue<TStep> GetQueue(IComposer composer)
         {
-            return (IJobQueue<TStep>) composer.GetComponent(Type.GetType(QueueType));
+            return composer.GetComponent<IJobQueue<TStep>>(QueueType);
         }
     }
 }

@@ -23,7 +23,10 @@ namespace Nebula.Job.Implementation
 
         [ComponentPlug]
         public IComposer Composer { get; set; }
-        
+
+        [ComponentPlug]
+        public IComponentContext ComponentContext { get; set; }
+
         public Task CleanupOldJobs()
         {
             return Task.CompletedTask;
@@ -72,9 +75,19 @@ namespace Nebula.Job.Implementation
             };
 
             await JobStore.AddOrUpdateDefinition(job);
-            await Composer.GetComponent<IJobQueue<TJobStep>>().EnsureJobQueueExists(jobId);
 
+            RegisterQueueType(job);
+
+            var queue = Composer.GetComponent<IJobQueue<TJobStep>>(job.Configuration.QueueDescriptor.QueueType);
+            await queue.EnsureJobQueueExists(jobId);
+            
             return jobId;
+        }
+
+        private void RegisterQueueType(JobData job)
+        {
+            var type = Type.GetType(job.Configuration.QueueDescriptor.AssemblyQualifiedName);
+            ComponentContext.Register(typeof(IJobQueue<>), job.Configuration.QueueDescriptor.QueueType, type);
         }
 
         public async Task AddPredecessor(string tenantId, string jobId, string predecessorJobId)
