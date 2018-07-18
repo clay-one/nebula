@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using ComposerCore.Implementation;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nebula.Job;
 using Nebula.Queue;
@@ -30,8 +31,24 @@ namespace Test
         }
 
         [TestMethod]
+        [ExpectedException(typeof(CompositionException))]
         public async Task QueueTtpe_notRegisteredQueue_ExceptionThrown()
         {
+            //create sample job with custom queue
+            var jobManager = Composer.GetComponent<IJobManager>();
+            var jobStore = Composer.GetComponent<IJobStore>();
+
+            var queueName = nameof(FirstJobStep);
+
+            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(
+                string.Empty, "sample-job", nameof(FirstJobStep), new JobConfigurationData
+                {
+                    MaxBatchSize = 100,
+                    MaxConcurrentBatchesPerWorker = 5,
+                    IsIndefinite = true,
+                    MaxBlockedSecondsPerCycle = 300,
+                    QueueName = queueName
+                });
         }
 
         [TestMethod]

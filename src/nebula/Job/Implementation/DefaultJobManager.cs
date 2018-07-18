@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ComposerCore;
 using ComposerCore.Attributes;
+using ComposerCore.Implementation;
 using hydrogen.General.Collections;
 using hydrogen.General.Text;
 using hydrogen.General.Validation;
@@ -77,6 +78,9 @@ namespace Nebula.Job.Implementation
             await JobStore.AddOrUpdateDefinition(job);
             
             var queue = Composer.GetComponent<IJobQueue<TJobStep>>(job.Configuration.QueueName);
+            if (queue == null)
+                throw new CompositionException("JobQueue should be registered");
+
             await queue.EnsureJobQueueExists(jobId);
             
             return jobId;
