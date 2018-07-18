@@ -10,6 +10,7 @@ namespace Test.SampleJob.FirstJob
     [IgnoredOnAssemblyRegistration]
     public class FirstJobQueue<TItem> : IJobQueue<TItem> where TItem : IJobStep
     {
+        private Dictionary<string, TItem> _queue = new Dictionary<string, TItem>();
         public Task EnsureJobQueueExists(string jobId = null)
         {
             return Task.CompletedTask;
@@ -17,17 +18,19 @@ namespace Test.SampleJob.FirstJob
 
         public Task<long> GetQueueLength(string jobId = null)
         {
-            throw new NotImplementedException();
+            return Task.FromResult((long)_queue.Count);
         }
 
         public Task PurgeQueueContents(string jobId = null)
         {
-            throw new NotImplementedException();
+            _queue.Clear();
+            return Task.CompletedTask;
         }
 
         public Task Enqueue(TItem item, string jobId = null)
         {
-            throw new NotImplementedException();
+            _queue.Add(jobId, item);
+            return Task.CompletedTask;
         }
 
         public Task EnqueueBatch(IEnumerable<TItem> items, string jobId = null)

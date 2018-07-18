@@ -48,6 +48,7 @@ namespace Test
 
             var jobData = await jobStore.LoadFromAnyTenant(jobId);
             var jobQueue = jobData.Configuration.QueueDescriptor.GetQueue<FirstJobStep>(Composer);
+
             Assert.AreEqual(typeof(FirstJobQueue<FirstJobStep>), jobQueue.GetType());
         }
 
@@ -87,5 +88,7 @@ namespace Test
             Assert.AreEqual(typeof(FirstJobQueue<FirstJobStep>), firstJobQueue.GetType());
             Assert.AreEqual(typeof(SecondJobQueue<SecondJobStep>), secondJobQueue.GetType());
         }
+
+
     }
 }
