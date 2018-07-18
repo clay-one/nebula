@@ -20,6 +20,6 @@ namespace Nebula.Storage.Model
 
         public List<string> PreprocessorJobIds { get; set; }
 
-        public QueueDescriptor QueueDescriptor { get; set; }
+        public string QueueName { get; set; }
     }
 }

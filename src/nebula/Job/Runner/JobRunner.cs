@@ -144,7 +144,7 @@ namespace Nebula.Job.Runner
             if (_jobData.Configuration.IsIndefinite)
                 return false;
 
-            var queue = _composer.GetComponent<IJobQueue<TJobStep>>(_jobData.Configuration.QueueDescriptor.QueueType);
+            var queue = _composer.GetComponent<IJobQueue<TJobStep>>(_jobData.Configuration.QueueName);
 
             if (await queue.GetQueueLength(_jobId) > 0)
                 return false;
@@ -387,7 +387,7 @@ namespace Nebula.Job.Runner
 
                 var nextBatchSize = Math.Min(throttledBatchSize, _jobData.Configuration.MaxBatchSize);
 
-                var queue = _composer.GetComponent<IJobQueue<TJobStep>>(_jobData.Configuration.QueueDescriptor.QueueType);
+                var queue = _composer.GetComponent<IJobQueue<TJobStep>>(_jobData.Configuration.QueueName);
 
                 steps = (await queue.DequeueBatch(nextBatchSize, _jobId)).SafeToList();
                 if (steps == null || steps.Count <= 0)

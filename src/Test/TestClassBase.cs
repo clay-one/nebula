@@ -1,7 +1,9 @@
-﻿using ComposerCore;
+﻿using System;
+using ComposerCore;
 using ComposerCore.Implementation;
 using ComposerCore.Utility;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Nebula.Queue;
 
 namespace Test
 {
@@ -26,6 +28,12 @@ namespace Test
             composer.ProcessCompositionXml("Connections.config");
 
             Composer = composer;
+        }
+
+        protected IJobQueue GetJobQueue(Type stepType, string queueName)
+        {
+            var contract = typeof(IJobQueue<>).MakeGenericType(stepType);
+            return Composer.GetComponent(contract, queueName) as IJobQueue;
         }
     }
 }

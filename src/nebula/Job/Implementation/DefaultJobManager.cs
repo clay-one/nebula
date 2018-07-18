@@ -75,21 +75,13 @@ namespace Nebula.Job.Implementation
             };
 
             await JobStore.AddOrUpdateDefinition(job);
-
-            RegisterQueueType(job);
-
-            var queue = Composer.GetComponent<IJobQueue<TJobStep>>(job.Configuration.QueueDescriptor.QueueType);
+            
+            var queue = Composer.GetComponent<IJobQueue<TJobStep>>(job.Configuration.QueueName);
             await queue.EnsureJobQueueExists(jobId);
             
             return jobId;
         }
-
-        private void RegisterQueueType(JobData job)
-        {
-            var type = Type.GetType(job.Configuration.QueueDescriptor.AssemblyQualifiedName);
-            ComponentContext.Register(typeof(IJobQueue<>), job.Configuration.QueueDescriptor.QueueType, type);
-        }
-
+        
         public async Task AddPredecessor(string tenantId, string jobId, string predecessorJobId)
         {
             await JobStore.AddPredecessor(tenantId, jobId, predecessorJobId);
@@ -154,7 +146,7 @@ namespace Nebula.Job.Implementation
                 {
                     await JobNotification.NotifyJobUpdated(jobId);
                     
-                    var jobQueue = GetJobQueue(jobData.JobStepType);
+                    var jobQueue = GetJobQueue(jobData);
                     if (jobQueue != null)
                         await jobQueue.PurgeQueueContents(jobId);
                     
@@ -240,7 +232,7 @@ namespace Nebula.Job.Implementation
             if (jobData == null)
                 return ApiValidationResult.Failure(ErrorKeys.InvalidJobId);
             
-            var jobQueue = GetJobQueue(jobData.JobStepType);
+            var jobQueue = GetJobQueue(jobData);
             if (jobQueue == null)
                 return ApiValidationResult.Failure(ErrorKeys.UnknownInternalServerError);
 
@@ -250,7 +242,7 @@ namespace Nebula.Job.Implementation
 
         public async Task<long> GetQueueLength(string tenantId, string jobId)
         {
-            var jobQueue = GetJobQueue((await JobStore.Load(tenantId, jobId))?.JobStepType);
+            var jobQueue = GetJobQueue((await JobStore.Load(tenantId, jobId)));
             return jobQueue == null ? 0 : await jobQueue.GetQueueLength(jobId);
         }
 
@@ -275,8 +267,8 @@ namespace Nebula.Job.Implementation
             if (configuration.ExpiresAt.HasValue && configuration.ExpiresAt < DateTime.Now)
                 throw new ArgumentException("Job is already expired and cannot be added");
 
-            if(configuration.QueueDescriptor == null)
-                throw new ArgumentException("QueueDescriptor must be specified in job configuration");
+            if(configuration.QueueName == null)
+                throw new ArgumentException("QueueName must be specified in job configuration");
 
             if (configuration.IdleSecondsToCompletion.HasValue)
                 configuration.IdleSecondsToCompletion = Math.Max(10, configuration.IdleSecondsToCompletion.Value);
@@ -288,12 +280,12 @@ namespace Nebula.Job.Implementation
                 configuration.MaxTargetQueueLength = Math.Max(1, configuration.MaxTargetQueueLength.Value);
         }
 
-        private IJobQueue GetJobQueue(string jobStepTypeName)
+        private IJobQueue GetJobQueue(JobData job)
         {
-            if (string.IsNullOrWhiteSpace(jobStepTypeName))
+            if (string.IsNullOrWhiteSpace(job.JobStepType))
                 return null;
             
-            var stepType = Type.GetType(jobStepTypeName);
+            var stepType = Type.GetType(job.JobStepType);
             if (stepType == null)
             {
                 // TODO: Log error
@@ -307,7 +299,7 @@ namespace Nebula.Job.Implementation
             }
             
             var contract = typeof(IJobQueue<>).MakeGenericType(stepType);
-            if (!(Composer.GetComponent(contract) is IJobQueue jobQueue))
+            if (!(Composer.GetComponent(contract,job.Configuration.QueueName) is IJobQueue jobQueue))
             {
                 // TODO: Log error
                 return null;

@@ -2,9 +2,9 @@
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nebula.Job;
+using Nebula.Queue;
 using Nebula.Storage;
 using Nebula.Storage.Model;
-using Test.SampleJob;
 using Test.SampleJob.FirstJob;
 using Test.SampleJob.SecondJob;
 
@@ -30,11 +30,19 @@ namespace Test
         }
 
         [TestMethod]
+        public async Task QueueTtpe_notRegisteredQueue_ExceptionThrown()
+        {
+        }
+
+        [TestMethod]
         public async Task QueueTtpe_CreateCustome_Success()
         {
             //create sample job with custom queue
             var jobManager = Composer.GetComponent<IJobManager>();
             var jobStore = Composer.GetComponent<IJobStore>();
+
+            var queueName = nameof(FirstJobStep);
+            Composer.Register(typeof(IJobQueue<>), queueName, typeof(FirstJobQueue<>));
 
             var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(
                 string.Empty, "sample-job", nameof(FirstJobStep), new JobConfigurationData
@@ -43,11 +51,12 @@ namespace Test
                     MaxConcurrentBatchesPerWorker = 5,
                     IsIndefinite = true,
                     MaxBlockedSecondsPerCycle = 300,
-                    QueueDescriptor = new FirstQueueDescriptor()
+                    QueueName = queueName
                 });
 
             var jobData = await jobStore.LoadFromAnyTenant(jobId);
-            var jobQueue = jobData.Configuration.QueueDescriptor.GetQueue<FirstJobStep>(Composer);
+            var jobQueue =
+                GetJobQueue(typeof(FirstJobStep), jobData.Configuration.QueueName) as IJobQueue<FirstJobStep>;
 
             Assert.AreEqual(typeof(FirstJobQueue<FirstJobStep>), jobQueue.GetType());
         }
@@ -59,6 +68,12 @@ namespace Test
             var jobManager = Composer.GetComponent<IJobManager>();
             var jobStore = Composer.GetComponent<IJobStore>();
 
+            var firstQueueName = nameof(FirstJobStep);
+            var secondQueueName = nameof(SecondJobStep);
+
+            Composer.Register(typeof(IJobQueue<>), firstQueueName, typeof(FirstJobQueue<>));
+            Composer.Register(typeof(IJobQueue<>), secondQueueName, typeof(SecondJobQueue<>));
+
             var firstJob = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(
                 string.Empty, "first-job", nameof(FirstJobStep), new JobConfigurationData
                 {
@@ -66,7 +81,7 @@ namespace Test
                     MaxConcurrentBatchesPerWorker = 5,
                     IsIndefinite = true,
                     MaxBlockedSecondsPerCycle = 300,
-                    QueueDescriptor = new FirstQueueDescriptor()
+                    QueueName = firstQueueName
                 });
 
             var secondJob = await jobManager.CreateNewJobOrUpdateDefinition<SecondJobStep>(
@@ -76,19 +91,19 @@ namespace Test
                     MaxConcurrentBatchesPerWorker = 5,
                     IsIndefinite = true,
                     MaxBlockedSecondsPerCycle = 300,
-                    QueueDescriptor = new SecondQueueDescriptor()
+                    QueueName = secondQueueName
                 });
 
             var firstJobData = await jobStore.LoadFromAnyTenant(firstJob);
-            var firstJobQueue = firstJobData.Configuration.QueueDescriptor.GetQueue<FirstJobStep>(Composer);
+            var firstJobQueue =
+                GetJobQueue(typeof(FirstJobStep), firstJobData.Configuration.QueueName) as IJobQueue<FirstJobStep>;
 
             var secondJobData = await jobStore.LoadFromAnyTenant(secondJob);
-            var secondJobQueue = secondJobData.Configuration.QueueDescriptor.GetQueue<SecondJobStep>(Composer);
+            var secondJobQueue =
+                GetJobQueue(typeof(SecondJobStep), secondJobData.Configuration.QueueName) as IJobQueue<SecondJobStep>;
 
             Assert.AreEqual(typeof(FirstJobQueue<FirstJobStep>), firstJobQueue.GetType());
             Assert.AreEqual(typeof(SecondJobQueue<SecondJobStep>), secondJobQueue.GetType());
         }
-
-
     }
 }
