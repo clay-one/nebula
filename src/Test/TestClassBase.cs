@@ -3,7 +3,14 @@ using ComposerCore;
 using ComposerCore.Implementation;
 using ComposerCore.Utility;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Nebula.Connection;
+using Nebula.Connection.Implementation;
+using Nebula.Job;
 using Nebula.Queue;
+using Nebula.Storage;
+using Nebula.Storage.Implementation;
+using Test.Mock;
 
 namespace Test
 {
@@ -26,6 +33,12 @@ namespace Test
 
             composer.RegisterAssembly("Nebula");
             composer.ProcessCompositionXml("Connections.config");
+
+            composer.Unregister(new ContractIdentity(typeof(IJobStore)));
+            composer.Register(typeof(IJobStore), typeof(MockJobStore));
+
+            composer.Unregister(new ContractIdentity(typeof(IJobNotification)));
+            composer.Register(typeof(IJobNotification), typeof(MockJobNotification));
 
             Composer = composer;
         }
