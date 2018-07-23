@@ -3,13 +3,9 @@ using ComposerCore;
 using ComposerCore.Implementation;
 using ComposerCore.Utility;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Nebula.Connection;
-using Nebula.Connection.Implementation;
 using Nebula.Job;
 using Nebula.Queue;
 using Nebula.Storage;
-using Nebula.Storage.Implementation;
 using Test.Mock;
 
 namespace Test
