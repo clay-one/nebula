@@ -17,8 +17,6 @@ namespace Nebula.Worker
         {
             _composer = new ComponentContext();
             ConfigWorker(_composer);
-
-            ConfigComposer(_composer);
             
             // Make sure all static jobs are defined on the database
             foreach (var component in _composer.GetAllComponents<IStaticJob>())
@@ -65,25 +63,6 @@ namespace Nebula.Worker
         }
 
         protected virtual void ConfigWorker(IComponentContext composer) { }
-
-        private static void ConfigComposer(IComponentContext composer)
-        {
-            RunCompositionXml(composer, string.Empty, string.Empty, "Connections.config");
-            RunCompositionXml(composer, "SampleWorker", "SampleWorker.Composition.xml", string.Empty);
-        }
-
-        private static void RunCompositionXml(IComponentContext composer, string assemblyName,
-            string manifestResourceName, string path)
-        {
-            if (!string.IsNullOrEmpty(path))
-            {
-                composer.ProcessCompositionXml(path);
-                return;
-            }
-
-            var assembly = Assembly.Load(assemblyName);
-            composer.ProcessCompositionXmlFromResource(assembly, manifestResourceName);
-        }
 
         protected async Task StopAsync()
         {
