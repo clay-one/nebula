@@ -16,10 +16,11 @@ namespace SampleJob
     internal class Program
     {
         public static IComposer Composer { get; set; }
-
+        public static IComponentContext ComponentContext { get; set; }
+        
         private static void Main()
         {
-            Composer = ConfigureComposer();
+            ConfigureComposer();
 
             var jobManager = Composer.GetComponent<IJobManager>();
 
@@ -30,13 +31,16 @@ namespace SampleJob
         {
             try
             {
+                ComponentContext.Register(typeof(IJobQueue<>), nameof(SampleJobQueue), typeof(SampleJobQueue));
+
                 var jobId = await jobManager.CreateNewJobOrUpdateDefinition<SampleJobStep>(
                     string.Empty, "sample-job", nameof(SampleJobStep), new JobConfigurationData
                     {
                         MaxBatchSize = 100,
                         MaxConcurrentBatchesPerWorker = 5,
                         IsIndefinite = true,
-                        MaxBlockedSecondsPerCycle = 300
+                        MaxBlockedSecondsPerCycle = 300,
+                        QueueName = nameof(SampleJobQueue)
                     });
 
                 var initialStep = new SampleJobStep
@@ -67,6 +71,8 @@ namespace SampleJob
             composer.Configuration.DisableAttributeChecking = true;
             composer.Register(typeof(IJobQueue<>), typeof(RedisJobQueue<>));
 
+            Composer = composer ;
+            ComponentContext = composer ;
             return composer;
         }
     }
