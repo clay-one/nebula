@@ -1,8 +1,7 @@
 ﻿using System;
 using ComposerCore;
-using ComposerCore.Implementation;
-using ComposerCore.Utility;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Nebula;
 using Nebula.Job;
 using Nebula.Queue;
 using Nebula.Storage;
@@ -10,39 +9,21 @@ using Test.Mock;
 
 namespace Test
 {
-    public class TestClassBase
+    public abstract class TestClassBase
     {
-        protected IComponentContext Composer { get; set; }
-
-        [TestInitialize]
-        public void Initialize()
+        [ClassInitialize]
+        public static void ClassInit(TestContext context)
         {
-            ConfigureComposer();
+            ConfigureNebula();
         }
 
-        private void ConfigureComposer()
+        private static void ConfigureNebula()
         {
-            if (Composer != null)
-                return;
+            NebulaContext.ComponentContext.Unregister(new ContractIdentity(typeof(IJobStore)));
+            NebulaContext.Register(typeof(IJobStore), typeof(MockJobStore));
 
-            var composer = new ComponentContext();
-
-            composer.RegisterAssembly("Nebula");
-            composer.ProcessCompositionXml("Connections.config");
-
-            composer.Unregister(new ContractIdentity(typeof(IJobStore)));
-            composer.Register(typeof(IJobStore), typeof(MockJobStore));
-
-            composer.Unregister(new ContractIdentity(typeof(IJobNotification)));
-            composer.Register(typeof(IJobNotification), typeof(MockJobNotification));
-
-            Composer = composer;
-        }
-
-        protected IJobQueue GetJobQueue(Type stepType, string queueName)
-        {
-            var contract = typeof(IJobQueue<>).MakeGenericType(stepType);
-            return Composer.GetComponent(contract, queueName) as IJobQueue;
+            NebulaContext.ComponentContext.Unregister(new ContractIdentity(typeof(IJobNotification)));
+            NebulaContext.Register(typeof(IJobNotification), typeof(MockJobNotification));
         }
     }
 }
