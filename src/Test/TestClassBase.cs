@@ -11,6 +11,7 @@ namespace Test
 {
     public abstract class TestClassBase
     {
+        protected  NebulaContext NebulaContext = new NebulaContext();
         [ClassInitialize]
         public static void ClassInit(TestContext context)
         {
@@ -20,10 +21,10 @@ namespace Test
         private static void ConfigureNebula()
         {
             NebulaContext.ComponentContext.Unregister(new ContractIdentity(typeof(IJobStore)));
-            NebulaContext.Register(typeof(IJobStore), typeof(MockJobStore));
+            NebulaContext.ComponentContext.Register(typeof(IJobStore), typeof(MockJobStore));
 
             NebulaContext.ComponentContext.Unregister(new ContractIdentity(typeof(IJobNotification)));
-            NebulaContext.Register(typeof(IJobNotification), typeof(MockJobNotification));
+            NebulaContext.ComponentContext.Register(typeof(IJobNotification), typeof(MockJobNotification));
         }
     }
 }

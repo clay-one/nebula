@@ -1,18 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using ComposerCore.Attributes;
+using Nebula;
 using Nebula.Queue;
 using Nebula.Storage.Model;
 
 namespace SampleJob
 {
-    [Component]
     public class SampleJobProcessor : IJobProcessor<SampleJobStep>
     {
-        [ComponentPlug]
-        public IJobQueue<SampleJobStep> JobQueue { get; set; }
-
-
         private static int _index;
         public void Initialize(JobData jobData)
         {
@@ -25,7 +21,7 @@ namespace SampleJob
                 Number = _index
             };
 
-            await JobQueue.Enqueue(initialStep, "sample-job");
+            await Program.Nebula.GetJobQueue<IJobQueue<SampleJobStep>>(typeof(SampleJobStep), "RedisJobQueue").Enqueue(initialStep, "sample-job");
 
             _index++;
             return null;

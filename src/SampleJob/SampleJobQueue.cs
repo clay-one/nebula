@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Nebula.Queue;
 
 namespace SampleJob
 {
-  public   class SampleJobQueue : IJobQueue<SampleJobStep>
+    public class SampleJobQueue : IJobQueue<SampleJobStep>
     {
         public Task EnsureJobQueueExists(string jobId = null)
         {
