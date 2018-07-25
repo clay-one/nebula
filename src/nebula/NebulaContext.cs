@@ -1,55 +1,54 @@
 ﻿using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using ComposerCore;
 using ComposerCore.Implementation;
 using ComposerCore.Utility;
+using Nebula.Job;
 using Nebula.Queue;
+
+[assembly: InternalsVisibleTo("Test")]
 
 namespace Nebula
 {
-    public static class NebulaContext
+    public class NebulaContext
     {
-        static NebulaContext()
+        public NebulaContext()
         {
             if (ComponentContext == null)
                 ConfigureComposer();
         }
 
-        public static IComponentContext ComponentContext { get; set; }
+        internal static IComponentContext ComponentContext { get; set; }
 
-        public static void Register(Type contractType, Type componentType)
+        public void RegisterJobProcessor(Type processor)
         {
-            ComponentContext.Register(contractType, componentType);
+            ComponentContext.Register(typeof(IJobProcessor<>), processor);
         }
 
-        public static void Register(Type contractType, Type componentType, string name)
+        public void RegisterJobQueue(Type jobQueue, string queueName)
         {
-            ComponentContext.Register(contractType, name, componentType);
+            ComponentContext.Register(typeof(IJobQueue<>), queueName, jobQueue);
         }
 
-        public static TContract GetComponent<TContract>() where TContract : class
-        {
-            return GetComponent<TContract>(null);
-        }
-
-        public static TContract GetComponent<TContract>(string name) where TContract : class
-        {
-            return ComponentContext.GetComponent(typeof(TContract), name) as TContract;
-        }
-
-        public static IJobQueue GetJobQueue(Type stepType, string queueName)
+        public TJobQueue GetJobQueue<TJobQueue>(Type stepType, string queueName) where TJobQueue : class
         {
             var contract = typeof(IJobQueue<>).MakeGenericType(stepType);
-            return NebulaContext.ComponentContext.GetComponent(contract, queueName) as IJobQueue;
+            return ComponentContext.GetComponent(contract, queueName) as TJobQueue;
         }
 
-        public static void ConnectionConfig(string path)
+        public IJobManager GetJobManager()
+        {
+            return ComponentContext.GetComponent<IJobManager>();
+        }
+
+        public void ConnectionConfig(string path)
         {
             if (!string.IsNullOrEmpty(path))
                 ComponentContext.ProcessCompositionXml(path);
         }
 
-        private static void ConfigureComposer()
+        private void ConfigureComposer()
         {
             var context = new ComponentContext();
 
