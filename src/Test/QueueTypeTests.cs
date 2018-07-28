@@ -23,8 +23,8 @@ namespace Test
             if (_initialized)
                 return;
 
-            NebulaContext.RegisterJobQueue( typeof(FirstJobQueue<>), nameof(FirstJobStep));
-            NebulaContext.RegisterJobQueue(typeof(SecondJobQueue<>), nameof(SecondJobStep));
+            Nebula.RegisterJobQueue( typeof(FirstJobQueue<>), nameof(FirstJobStep));
+            Nebula.RegisterJobQueue(typeof(SecondJobQueue<>), nameof(SecondJobStep));
             _initialized = true;
         }
 
@@ -32,7 +32,7 @@ namespace Test
         [ExpectedException(typeof(ArgumentException))]
         public async Task QueueTtpe_notDefined_ExceptionThrown()
         {
-            var jobManager = NebulaContext.GetJobManager();
+            var jobManager = Nebula.GetJobManager();
 
             await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(
                 string.Empty, "sample-job", nameof(FirstJobStep), new JobConfigurationData
@@ -49,7 +49,7 @@ namespace Test
         public async Task QueueTtpe_notRegisteredQueue_ExceptionThrown()
         {
             //create sample job with custom queue
-            var jobManager = NebulaContext.GetJobManager();
+            var jobManager = Nebula.GetJobManager();
 
             await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(
                 string.Empty, "sample-job", nameof(FirstJobStep), new JobConfigurationData
@@ -66,8 +66,8 @@ namespace Test
         public async Task QueueTtpe_CreateCustome_Success()
         {
             //create sample job with custom queue
-            var jobManager = NebulaContext.GetJobManager();
-            var jobStore = NebulaContext.ComponentContext.GetComponent<IJobStore>();
+            var jobManager = Nebula.GetJobManager();
+            var jobStore = Nebula.ComponentContext.GetComponent<IJobStore>();
 
             var queueName = nameof(FirstJobStep);
 
@@ -83,7 +83,7 @@ namespace Test
 
             var jobData = await jobStore.LoadFromAnyTenant(jobId);
             var jobQueue =
-                NebulaContext.GetJobQueue<IJobQueue<FirstJobStep>>(typeof(FirstJobStep), jobData.Configuration.QueueName);
+                Nebula.GetJobQueue<IJobQueue<FirstJobStep>>(typeof(FirstJobStep), jobData.Configuration.QueueName);
 
             Assert.AreEqual(typeof(FirstJobQueue<FirstJobStep>), jobQueue.GetType());
         }
@@ -92,8 +92,8 @@ namespace Test
         public async Task QueueTtpe_DifferentJobs_DifferentQueues()
         {
             //create sample job with custom queue
-            var jobManager = NebulaContext.GetJobManager();
-            var jobStore = NebulaContext.ComponentContext.GetComponent<IJobStore>();
+            var jobManager = Nebula.GetJobManager();
+            var jobStore = Nebula.ComponentContext.GetComponent<IJobStore>();
 
             var firstJob = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(
                 string.Empty, "first-job", nameof(FirstJobStep), new JobConfigurationData
@@ -117,14 +117,15 @@ namespace Test
 
             var firstJobData = await jobStore.LoadFromAnyTenant(firstJob);
             var firstJobQueue =
-                NebulaContext.GetJobQueue<IJobQueue<FirstJobStep>>(typeof(FirstJobStep), firstJobData.Configuration.QueueName) ;
+                Nebula.GetJobQueue<IJobQueue<FirstJobStep>>(typeof(FirstJobStep), firstJobData.Configuration.QueueName) ;
 
             var secondJobData = await jobStore.LoadFromAnyTenant(secondJob);
             var secondJobQueue =
-                NebulaContext.GetJobQueue<IJobQueue<SecondJobStep>>(typeof(SecondJobStep), secondJobData.Configuration.QueueName) ;
+                Nebula.GetJobQueue<IJobQueue<SecondJobStep>>(typeof(SecondJobStep), secondJobData.Configuration.QueueName) ;
 
             Assert.AreEqual(typeof(FirstJobQueue<FirstJobStep>), firstJobQueue.GetType());
             Assert.AreEqual(typeof(SecondJobQueue<SecondJobStep>), secondJobQueue.GetType());
         }
+
     }
 }

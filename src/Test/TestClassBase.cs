@@ -1,9 +1,7 @@
-﻿using System;
-using ComposerCore;
+﻿using ComposerCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nebula;
 using Nebula.Job;
-using Nebula.Queue;
 using Nebula.Storage;
 using Test.Mock;
 
@@ -11,20 +9,29 @@ namespace Test
 {
     public abstract class TestClassBase
     {
-        protected  NebulaContext NebulaContext = new NebulaContext();
-        [ClassInitialize]
-        public static void ClassInit(TestContext context)
+        protected static NebulaContext Nebula;
+
+        [TestInitialize]
+        public void ClassInit()
         {
+            Nebula = new NebulaContext();
             ConfigureNebula();
         }
 
-        private static void ConfigureNebula()
+        [TestCleanup]
+        public void Cleanup()
         {
-            NebulaContext.ComponentContext.Unregister(new ContractIdentity(typeof(IJobStore)));
-            NebulaContext.ComponentContext.Register(typeof(IJobStore), typeof(MockJobStore));
+            Nebula = null;
+        }
 
-            NebulaContext.ComponentContext.Unregister(new ContractIdentity(typeof(IJobNotification)));
-            NebulaContext.ComponentContext.Register(typeof(IJobNotification), typeof(MockJobNotification));
+
+        protected static void ConfigureNebula()
+        {
+            Nebula.ComponentContext.Unregister(new ContractIdentity(typeof(IJobStore)));
+            Nebula.ComponentContext.Register(typeof(IJobStore), typeof(MockJobStore));
+
+            Nebula.ComponentContext.Unregister(new ContractIdentity(typeof(IJobNotification)));
+            Nebula.ComponentContext.Register(typeof(IJobNotification), typeof(MockJobNotification));
         }
     }
 }

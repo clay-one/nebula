@@ -19,7 +19,7 @@ namespace Nebula
                 ConfigureComposer();
         }
 
-        internal static IComponentContext ComponentContext { get; set; }
+        internal IComponentContext ComponentContext { get; set; }
 
         public void RegisterJobProcessor(Type processor)
         {
@@ -60,5 +60,6 @@ namespace Nebula
             context.Configuration.DisableAttributeChecking = true;
             ComponentContext = context;
         }
+
     }
 }
