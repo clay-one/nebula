@@ -4,7 +4,7 @@ using StackExchange.Redis;
 namespace Nebula.Connection.Implementation
 {
     [Component]
-    public class DefaultRedisManager : IRedisManager
+    internal class DefaultRedisManager : IRedisManager
     {
         private ConnectionMultiplexer _connectionMultiplexer;
 

@@ -11,7 +11,7 @@ namespace Nebula.Job.Runner
     /// is required, you should either access this class in a Mutex, or consider
     /// SchedulerThread class in common-dotnet library.  
     /// </remarks>
-    public class ThrottleCalculator
+    internal class ThrottleCalculator
     {
         private double _ratePerSecond;
         private int _maxBurstSize;

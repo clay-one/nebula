@@ -9,28 +9,26 @@ namespace Nebula.Worker
 {
     [Contract]
     [Component]
-    public class WorkerServiceBase
+    public class WorkerService
     {
         [ComponentPlug]
-        public IComponentContext ComponentContext { get; set; }
+        public IComposer Composer { get; set; }
 
-        protected bool Stopping { get; set; }
+        public bool Stopping { get; set; }
 
-        protected async Task StartAsync()
+        public async Task StartAsync()
         {
-            ConfigWorker(ComponentContext);
-
             // Make sure all static jobs are defined on the database
-            foreach (var component in ComponentContext.GetAllComponents<IStaticJob>())
+            foreach (var component in Composer.GetAllComponents<IStaticJob>())
                 await component.EnsureJobsDefined();
 
-            await ComponentContext.GetComponent<IJobManager>().CleanupOldJobs();
+            await Composer.GetComponent<IJobManager>().CleanupOldJobs();
 
             // Watch on notification channel, to get notified of job changes immediately
-            await ComponentContext.GetComponent<IJobNotification>().StartNotificationTargetThread();
+            await Composer.GetComponent<IJobNotification>().StartNotificationTargetThread();
 
             // Start a runner for ongoing jobs on startup
-            await ComponentContext.GetComponent<IJobRunnerManager>().CheckStoreJobs();
+            await Composer.GetComponent<IJobRunnerManager>().CheckStoreJobs();
 
             // Start a monitor thread
             new Thread(() =>
@@ -49,8 +47,8 @@ namespace Nebula.Worker
 
                     try
                     {
-                        ComponentContext.GetComponent<IJobRunnerManager>().CheckStoreJobs().GetAwaiter().GetResult();
-                        ComponentContext.GetComponent<IJobRunnerManager>().CheckHealthOfAllRunners().GetAwaiter()
+                        Composer.GetComponent<IJobRunnerManager>().CheckStoreJobs().GetAwaiter().GetResult();
+                        Composer.GetComponent<IJobRunnerManager>().CheckHealthOfAllRunners().GetAwaiter()
                             .GetResult();
                     }
                     catch (Exception e)
@@ -60,16 +58,12 @@ namespace Nebula.Worker
                 }
             }).Start();
         }
-
-        protected virtual void ConfigWorker(IComponentContext composer)
+        
+        public async Task StopAsync()
         {
-        }
+            await Composer.GetComponent<IJobNotification>().StopNotificationTargetThread();
 
-        protected async Task StopAsync()
-        {
-            await ComponentContext.GetComponent<IJobNotification>().StopNotificationTargetThread();
-
-            ComponentContext.GetComponent<IJobRunnerManager>().StopAllRunners();
+            Composer.GetComponent<IJobRunnerManager>().StopAllRunners();
         }
     }
 }

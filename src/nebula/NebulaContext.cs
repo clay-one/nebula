@@ -6,6 +6,7 @@ using ComposerCore.Implementation;
 using ComposerCore.Utility;
 using Nebula.Job;
 using Nebula.Queue;
+using Nebula.Worker;
 
 [assembly: InternalsVisibleTo("Test")]
 
@@ -42,6 +43,20 @@ namespace Nebula
             return ComponentContext.GetComponent<IJobManager>();
         }
 
+        public void StartWorkerService()
+        {
+            var workerService = ComponentContext.GetComponent<WorkerService>();
+            workerService.StartAsync().GetAwaiter().GetResult();
+        }
+
+        public void StopWorkerService()
+        {
+            var workerService = ComponentContext.GetComponent<WorkerService>();
+
+            workerService.Stopping = true;
+            workerService.StopAsync().GetAwaiter().GetResult();
+        }
+
         public void ConnectionConfig(string path)
         {
             if (!string.IsNullOrEmpty(path))
@@ -54,8 +69,6 @@ namespace Nebula
 
             var assembly = Assembly.Load("Nebula");
             context.RegisterAssembly(assembly);
-
-            context.ProcessCompositionXml("Connections.config");
 
             context.Configuration.DisableAttributeChecking = true;
             ComponentContext = context;

@@ -5,7 +5,7 @@ using Nebula.Storage.Model;
 
 namespace Nebula.Job
 {
-    public interface IJobRunner
+    internal interface IJobRunner
     {
         string JobId { get; }
         bool IsProcessRunning { get; }
@@ -16,7 +16,7 @@ namespace Nebula.Job
     }
 
     [Contract]
-    public interface IJobRunner<TJobStep> : IJobRunner where TJobStep : IJobStep
+    internal interface IJobRunner<TJobStep> : IJobRunner where TJobStep : IJobStep
     {
     }
 }

@@ -4,7 +4,7 @@ using ComposerCore.Attributes;
 namespace Nebula.Job
 {
     [Contract]
-    public interface IJobNotification
+    internal interface IJobNotification
     {
         Task StartNotificationTargetThread();
         Task StopNotificationTargetThread();

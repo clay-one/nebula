@@ -14,7 +14,7 @@ namespace SampleJob
         public static NebulaContext  Nebula = new NebulaContext();
         private static void Main()
         {
-            Nebula.RegisterJobQueue(typeof(SampleJobQueue), nameof(SampleJobQueue));
+           // Nebula.RegisterJobQueue(typeof(SampleJobQueue), nameof(SampleJobQueue));
             Nebula.RegisterJobQueue(typeof(RedisJobQueue<>), "RedisJobQueue");
             Nebula.ConnectionConfig("Connections.config");
 

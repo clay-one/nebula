@@ -5,7 +5,7 @@ using Nebula.Storage.Model;
 namespace Nebula.Connection
 {
     [Contract]
-    public interface IJobMongoManager
+    internal interface IJobMongoManager
     {
         IMongoDatabase Database { get; }
 

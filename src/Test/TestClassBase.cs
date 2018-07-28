@@ -18,13 +18,6 @@ namespace Test
             ConfigureNebula();
         }
 
-        [TestCleanup]
-        public void Cleanup()
-        {
-            Nebula = null;
-        }
-
-
         protected static void ConfigureNebula()
         {
             Nebula.ComponentContext.Unregister(new ContractIdentity(typeof(IJobStore)));
