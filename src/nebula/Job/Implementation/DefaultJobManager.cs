@@ -14,7 +14,7 @@ using Nebula.Storage.Model;
 namespace Nebula.Job.Implementation
 {
     [Component]
-    public class DefaultJobManager : IJobManager
+    internal class DefaultJobManager : IJobManager
     {
         [ComponentPlug]
         public IJobNotification JobNotification { get; set; }

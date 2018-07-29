@@ -9,7 +9,7 @@ namespace Nebula.Job.Runner
     [Contract]
     [Component]
     [ComponentCache(null)]
-    public class FaultyJobRunner : IJobRunner
+    internal class FaultyJobRunner : IJobRunner
     {
         private string _errorMessage;
         private Exception _exception;

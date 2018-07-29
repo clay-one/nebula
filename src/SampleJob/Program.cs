@@ -1,28 +1,24 @@
 ﻿using System;
-using System.Reflection;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using ComposerCore;
-using ComposerCore.Implementation;
-using ComposerCore.Utility;
+using Nebula;
 using Nebula.Job;
-using Nebula.Job.Runner;
 using Nebula.Queue;
 using Nebula.Queue.Implementation;
-using Nebula.Storage;
 using Nebula.Storage.Model;
 
 namespace SampleJob
 {
     internal class Program
     {
-        public static IComposer Composer { get; set; }
-        public static IComponentContext ComponentContext { get; set; }
-        
+        public static NebulaContext  Nebula = new NebulaContext();
         private static void Main()
         {
-            ConfigureComposer();
+           // Nebula.RegisterJobQueue(typeof(SampleJobQueue), nameof(SampleJobQueue));
+            Nebula.RegisterJobQueue(typeof(RedisJobQueue<>), "RedisJobQueue");
+            Nebula.ConnectionConfig("Connections.config");
 
-            var jobManager = Composer.GetComponent<IJobManager>();
+            var jobManager = Nebula.GetJobManager();
 
             CreateJob(jobManager).Wait();
         }
@@ -31,8 +27,6 @@ namespace SampleJob
         {
             try
             {
-                ComponentContext.Register(typeof(IJobQueue<>), nameof(SampleJobQueue), typeof(SampleJobQueue));
-
                 var jobId = await jobManager.CreateNewJobOrUpdateDefinition<SampleJobStep>(
                     string.Empty, "sample-job", nameof(SampleJobStep), new JobConfigurationData
                     {
@@ -40,7 +34,7 @@ namespace SampleJob
                         MaxConcurrentBatchesPerWorker = 5,
                         IsIndefinite = true,
                         MaxBlockedSecondsPerCycle = 300,
-                        QueueName = nameof(SampleJobQueue)
+                        QueueName = "RedisJobQueue"
                     });
 
                 var initialStep = new SampleJobStep
@@ -48,7 +42,8 @@ namespace SampleJob
                     Number = 1
                 };
 
-                await Composer.GetComponent<IJobQueue<SampleJobStep>>().Enqueue(initialStep, jobId);
+                await Nebula.GetJobQueue<IJobQueue<SampleJobStep>>(typeof(SampleJobStep), "RedisJobQueue")
+                    .Enqueue(initialStep, jobId);
 
                 await jobManager.StartJobIfNotStarted(string.Empty, nameof(SampleJobStep));
             }
@@ -57,23 +52,6 @@ namespace SampleJob
                 Console.WriteLine(e);
                 throw;
             }
-        }
-
-        private static IComposer ConfigureComposer()
-        {
-            var composer = new ComponentContext();
-            var assembly = Assembly.Load("SampleJob");
-
-            composer.RegisterAssembly(assembly);
-            composer.RegisterAssembly("Nebula");
-            composer.ProcessCompositionXml("Connections.config");
-
-            composer.Configuration.DisableAttributeChecking = true;
-            composer.Register(typeof(IJobQueue<>), typeof(RedisJobQueue<>));
-
-            Composer = composer ;
-            ComponentContext = composer ;
-            return composer;
         }
     }
 }

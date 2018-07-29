@@ -10,7 +10,7 @@ using Nebula.Storage.Model;
 namespace Nebula.Storage.Implementation
 {
     [Component]
-    public class MongoJobStore : IJobStore
+    internal class MongoJobStore : IJobStore
     {
         private const int NumberOfExceptionsToKeep = 20;
         private const int NumberOfFailuresToKeep = 20;

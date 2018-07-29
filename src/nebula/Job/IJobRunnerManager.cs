@@ -4,7 +4,7 @@ using ComposerCore.Attributes;
 namespace Nebula.Job
 {
     [Contract]
-    public interface IJobRunnerManager
+    internal interface IJobRunnerManager
     {
         Task CheckStoreJobs();
         Task CheckHealthOfAllRunners();

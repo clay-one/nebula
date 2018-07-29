@@ -1,48 +1,30 @@
-﻿using System;
-using ComposerCore;
-using ComposerCore.Implementation;
-using ComposerCore.Utility;
+﻿using ComposerCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Nebula;
 using Nebula.Job;
-using Nebula.Queue;
 using Nebula.Storage;
 using Test.Mock;
 
 namespace Test
 {
-    public class TestClassBase
+    public abstract class TestClassBase
     {
-        protected IComponentContext Composer { get; set; }
+        protected static NebulaContext Nebula;
 
         [TestInitialize]
-        public void Initialize()
+        public void ClassInit()
         {
-            ConfigureComposer();
+            Nebula = new NebulaContext();
+            ConfigureNebula();
         }
 
-        private void ConfigureComposer()
+        protected static void ConfigureNebula()
         {
-            if (Composer != null)
-                return;
+            Nebula.ComponentContext.Unregister(new ContractIdentity(typeof(IJobStore)));
+            Nebula.ComponentContext.Register(typeof(IJobStore), typeof(MockJobStore));
 
-            var composer = new ComponentContext();
-
-            composer.RegisterAssembly("Nebula");
-            composer.ProcessCompositionXml("Connections.config");
-
-            composer.Unregister(new ContractIdentity(typeof(IJobStore)));
-            composer.Register(typeof(IJobStore), typeof(MockJobStore));
-
-            composer.Unregister(new ContractIdentity(typeof(IJobNotification)));
-            composer.Register(typeof(IJobNotification), typeof(MockJobNotification));
-
-            Composer = composer;
-        }
-
-        protected IJobQueue GetJobQueue(Type stepType, string queueName)
-        {
-            var contract = typeof(IJobQueue<>).MakeGenericType(stepType);
-            return Composer.GetComponent(contract, queueName) as IJobQueue;
+            Nebula.ComponentContext.Unregister(new ContractIdentity(typeof(IJobNotification)));
+            Nebula.ComponentContext.Register(typeof(IJobNotification), typeof(MockJobNotification));
         }
     }
 }

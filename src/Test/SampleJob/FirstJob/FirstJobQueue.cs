@@ -6,8 +6,6 @@ using Nebula.Queue;
 
 namespace Test.SampleJob.FirstJob
 {
-    [Component]
-    [IgnoredOnAssemblyRegistration]
     public class FirstJobQueue<TItem> : IJobQueue<TItem> where TItem : IJobStep
     {
         private Dictionary<string, TItem> _queue = new Dictionary<string, TItem>();

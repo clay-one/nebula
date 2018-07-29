@@ -6,8 +6,6 @@ using Nebula.Queue;
 
 namespace Test.SampleJob.SecondJob
 {
-    [Component]
-    [IgnoredOnAssemblyRegistration]
     public class SecondJobQueue<TItem> : IJobQueue<TItem> where TItem : IJobStep
     {
         public Task EnsureJobQueueExists(string jobId = null)

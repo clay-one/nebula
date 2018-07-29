@@ -7,7 +7,7 @@ using ServiceStack.Text;
 namespace Nebula.Queue.Implementation
 {
     [Component]
-    public class RedisJobNotification : IJobNotification
+    internal class RedisJobNotification : IJobNotification
     {
         private const string JobUpdatedChannelName = "job-updated";
 //        private Thread _targetThread;

@@ -13,7 +13,7 @@ using Nebula.Storage.Model;
 
 namespace Nebula.Job.Runner
 {
-    public class JobRunner
+    internal class JobRunner
     {
         protected static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -21,7 +21,7 @@ namespace Nebula.Job.Runner
 
     [Component]
     [ComponentCache(null)]
-    public class JobRunner<TJobStep> : JobRunner, IJobRunner<TJobStep> where TJobStep : IJobStep
+    internal class JobRunner<TJobStep> : JobRunner, IJobRunner<TJobStep> where TJobStep : IJobStep
     {
         private const int WaitMillisWhenTargetQueueIsFull = 1000;
         private const int WaitMillisWhenThereIsNoMoreWork = 2000;
