@@ -11,17 +11,17 @@ namespace Nebula.Controllers
     [ComponentCache(null)]
     public class JobActionsController : ApiControllerBase
     {
-        // PUT	/tenant/:tenantId/jobs/:j/actions/resume	-B, IDMP	Changes a job's status back to "InProgress" to continue working normally, if the job is paused or draining.
-        // PUT	/tenant/:tenantId/jobs/:j/actions/pause	-B, IDMP	Changes a job's status to "Paused", and stops workers of the job temporarily until resumed.
-        // PUT	/tenant/:tenantId/jobs/:j/actions/drain	-B, IDMP	Changes a job's status to "Draining", and causes the job queue items to be drained without processing.
-        // PUT	/tenant/:tenantId/jobs/:j/actions/stop	-B, IDMP	Stops a job and all its preprocessors permanently, and deletes all of the job queue items.
-        // PUT	/tenant/:tenantId/jobs/:j/actions/purge-queue	-B, IDMP	Purges the current job queue without any change in the job status.
+        // PUT	/jobs/j/:j/actions/resume	-B, IDMP	Changes a job's status back to "InProgress" to continue working normally, if the job is paused or draining.
+        // PUT	/jobs/j/:j/actions/pause	-B, IDMP	Changes a job's status to "Paused", and stops workers of the job temporarily until resumed.
+        // PUT	/jobs/j/:j/actions/drain	-B, IDMP	Changes a job's status to "Draining", and causes the job queue items to be drained without processing.
+        // PUT	/jobs/j/:j/actions/stop	-B, IDMP	Stops a job and all its preprocessors permanently, and deletes all of the job queue items.
+        // PUT	/jobs/j/:j/actions/purge-queue	-B, IDMP	Purges the current job queue without any change in the job status.
 
         [ComponentPlug]
         public IJobManager JobManager { get; set; }
 
         [HttpPut]
-        [Route("tenant/{tenantId}/jobs/{jobId}/actions/resume")]
+        [Route("jobs/j/{jobId}/actions/resume")]
         public async Task<IHttpActionResult> ResumeJob(string tenantId, string jobId)
         {
             var validationResult = ValidateForResumeJob(jobId);
@@ -32,7 +32,7 @@ namespace Nebula.Controllers
         }
 
         [HttpPut]
-        [Route("tenant/{tenantId}/jobs/{jobId}/actions/pause")]
+        [Route("jobs/j/{jobId}/actions/pause")]
         public async Task<IHttpActionResult> PauseJob(string tenantId, string jobId)
         {
             var validationResult = ValidateForPauseJob(jobId);
@@ -43,7 +43,7 @@ namespace Nebula.Controllers
         }
 
         [HttpPut]
-        [Route("tenant/{tenantId}/jobs/{jobId}/actions/drain")]
+        [Route("jobs/j/{jobId}/actions/drain")]
         public async Task<IHttpActionResult> DrainJob(string tenantId, string jobId)
         {
             var validationResult = ValidateForDrainJob(jobId);
@@ -54,7 +54,7 @@ namespace Nebula.Controllers
         }
 
         [HttpPut]
-        [Route("tenant/{tenantId}/jobs/{jobId}/actions/stop")]
+        [Route("jobs/j/{jobId}/actions/stop")]
         public async Task<IHttpActionResult> StopJob(string tenantId, string jobId)
         {
             var validationResult = ValidateForStopJob(jobId);
@@ -65,7 +65,7 @@ namespace Nebula.Controllers
         }
 
         [HttpPut]
-        [Route("tenant/{tenantId}/jobs/{jobId}/actions/purge-queue")]
+        [Route("jobs/j/{jobId}/actions/purge-queue")]
         public async Task<IHttpActionResult> PurgeJobQueue(string tenantId, string jobId)
         {
             var validationResult = ValidateForPurgeJobQueue(jobId);

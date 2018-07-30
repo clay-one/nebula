@@ -4,10 +4,10 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Nebula</AssemblyName>
     <RootNamespace>Nebula</RootNamespace>
-    <Authors>Clay-one</Authors>
-    <Company>Clay-one</Company>
+    <Authors>clay-one</Authors>
+    <Company>clay-one</Company>
     <Description>Nebula is background worker for .NET Core and .NET Framework projects</Description>
-    <PackageId>Clayone.Nebula</PackageId>
+    <PackageId>ClayOne.Nebula</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

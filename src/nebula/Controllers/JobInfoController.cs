@@ -15,8 +15,8 @@ namespace Nebula.Controllers
     [ComponentCache(null)]
     public class JobInfoController : ApiControllerBase
     {
-        // GET	/tenant/{tenantId}/jobs/list	-B, SAFE	Get the list of running / pending / recently finished jobs
-        // GET	/tenant/{tenantId}/jobs/:j	-B, SAFE Enquiry the status / result of an asynchronous operation, using the ID returned when starting the job
+        // GET	/jobs/list	-B, SAFE	Get the list of running / pending / recently finished jobs
+        // GET	/jobs/j/:j	-B, SAFE Enquiry the status / result of an asynchronous operation, using the ID returned when starting the job
 
         [ComponentPlug]
         public IJobStore JobStore { get; set; }
@@ -25,7 +25,7 @@ namespace Nebula.Controllers
         public IJobManager JobManager { get; set; }
 
         [HttpGet]
-        [Route("tenant/{tenantId}/jobs/list")]
+        [Route("jobs/list")]
         public async Task<IHttpActionResult> GetJobList(string tenantId)
         {
             var allJobs = await JobStore.LoadAll(tenantId);
@@ -36,7 +36,7 @@ namespace Nebula.Controllers
         }
 
         [HttpGet]
-        [Route("tenant/{tenantId}/jobs/{jobId}")]
+        [Route("jobs/j/{jobId}")]
         public async Task<IHttpActionResult> GetJobStatus(string tenantId, string jobId)
         {
             var jobData = await JobStore.Load(tenantId, jobId);
