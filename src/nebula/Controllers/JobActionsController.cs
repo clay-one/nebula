@@ -3,6 +3,7 @@ using System.Web.Http;
 using ComposerCore.Attributes;
 using hydrogen.General.Validation;
 using Nebula.Job;
+using Nebula.Multitenancy;
 
 namespace Nebula.Controllers
 {
@@ -20,59 +21,62 @@ namespace Nebula.Controllers
         [ComponentPlug]
         public IJobManager JobManager { get; set; }
 
+        [ComponentPlug]
+        public ITenantProvider Tenant { get; set; }
+
         [HttpPut]
         [Route("jobs/j/{jobId}/actions/resume")]
-        public async Task<IHttpActionResult> ResumeJob(string tenantId, string jobId)
+        public async Task<IHttpActionResult> ResumeJob(string jobId)
         {
             var validationResult = ValidateForResumeJob(jobId);
             if (!validationResult.Success)
                 return ValidationResult(validationResult);
 
-            return ValidationResult(await JobManager.ResumeJob(tenantId, jobId));
+            return ValidationResult(await JobManager.ResumeJob(Tenant.Id, jobId));
         }
 
         [HttpPut]
         [Route("jobs/j/{jobId}/actions/pause")]
-        public async Task<IHttpActionResult> PauseJob(string tenantId, string jobId)
+        public async Task<IHttpActionResult> PauseJob(string jobId)
         {
             var validationResult = ValidateForPauseJob(jobId);
             if (!validationResult.Success)
                 return ValidationResult(validationResult);
 
-            return ValidationResult(await JobManager.PauseJob(tenantId, jobId));
+            return ValidationResult(await JobManager.PauseJob(Tenant.Id, jobId));
         }
 
         [HttpPut]
         [Route("jobs/j/{jobId}/actions/drain")]
-        public async Task<IHttpActionResult> DrainJob(string tenantId, string jobId)
+        public async Task<IHttpActionResult> DrainJob(string jobId)
         {
             var validationResult = ValidateForDrainJob(jobId);
             if (!validationResult.Success)
                 return ValidationResult(validationResult);
 
-            return ValidationResult(await JobManager.DrainJob(tenantId, jobId));
+            return ValidationResult(await JobManager.DrainJob(Tenant.Id, jobId));
         }
 
         [HttpPut]
         [Route("jobs/j/{jobId}/actions/stop")]
-        public async Task<IHttpActionResult> StopJob(string tenantId, string jobId)
+        public async Task<IHttpActionResult> StopJob(string jobId)
         {
             var validationResult = ValidateForStopJob(jobId);
             if (!validationResult.Success)
                 return ValidationResult(validationResult);
 
-            return ValidationResult(await JobManager.StopJob(tenantId, jobId));
+            return ValidationResult(await JobManager.StopJob(Tenant.Id, jobId));
         }
 
         [HttpPut]
         [Route("jobs/j/{jobId}/actions/purge-queue")]
-        public async Task<IHttpActionResult> PurgeJobQueue(string tenantId, string jobId)
+        public async Task<IHttpActionResult> PurgeJobQueue(string jobId)
         {
             var validationResult = ValidateForPurgeJobQueue(jobId);
             if (!validationResult.Success)
                 return ValidationResult(validationResult);
 
-            return ValidationResult(await JobManager.PurgeJobQueue(tenantId, jobId));
+            return ValidationResult(await JobManager.PurgeJobQueue(Tenant.Id, jobId));
         }
 
         #region Validation methods

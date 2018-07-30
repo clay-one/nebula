@@ -5,6 +5,7 @@ using ComposerCore.Attributes;
 using hydrogen.General.Collections;
 using Nebula.Controllers.Dto;
 using Nebula.Job;
+using Nebula.Multitenancy;
 using Nebula.Storage;
 using Nebula.Storage.Model;
 
@@ -24,6 +25,9 @@ namespace Nebula.Controllers
         [ComponentPlug]
         public IJobManager JobManager { get; set; }
 
+        [ComponentPlug]
+        public ITenantProvider Tenant { get; set; }
+
         [HttpGet]
         [Route("jobs/list")]
         public async Task<IHttpActionResult> GetJobList(string tenantId)
@@ -37,16 +41,16 @@ namespace Nebula.Controllers
 
         [HttpGet]
         [Route("jobs/j/{jobId}")]
-        public async Task<IHttpActionResult> GetJobStatus(string tenantId, string jobId)
+        public async Task<IHttpActionResult> GetJobStatus( string jobId)
         {
-            var jobData = await JobStore.Load(tenantId, jobId);
+            var jobData = await JobStore.Load(Tenant.Id, jobId);
             if (jobData == null)
                 return NotFound();
 
             var result = ToGetJobStatusResponse(jobData);
 
             // TODO Multiple-loading of job data when calling this API. Once above, and once in getting queue length
-            result.QueueLength = await JobManager.GetQueueLength(tenantId, jobId);
+            result.QueueLength = await JobManager.GetQueueLength(Tenant.Id, jobId);
 
             return Ok(result);
         }
