@@ -77,7 +77,7 @@ namespace Nebula.Job.Implementation
 
             await JobStore.AddOrUpdateDefinition(job);
             
-            var queue = Composer.GetComponent<IJobQueue<TJobStep>>(job.Configuration.QueueName);
+            var queue = Composer.GetComponent<IJobQueue<TJobStep>>(job.Configuration.QueueTypeName);
             if (queue == null)
                 throw new CompositionException("JobQueue should be registered");
 
@@ -271,8 +271,8 @@ namespace Nebula.Job.Implementation
             if (configuration.ExpiresAt.HasValue && configuration.ExpiresAt < DateTime.Now)
                 throw new ArgumentException("Job is already expired and cannot be added");
 
-            if(configuration.QueueName == null)
-                throw new ArgumentException("QueueName must be specified in job configuration");
+            if(configuration.QueueTypeName == null)
+                throw new ArgumentException("QueueTypeName must be specified in job configuration");
 
             if (configuration.IdleSecondsToCompletion.HasValue)
                 configuration.IdleSecondsToCompletion = Math.Max(10, configuration.IdleSecondsToCompletion.Value);
@@ -303,7 +303,7 @@ namespace Nebula.Job.Implementation
             }
             
             var contract = typeof(IJobQueue<>).MakeGenericType(stepType);
-            if (!(Composer.GetComponent(contract,job.Configuration.QueueName) is IJobQueue jobQueue))
+            if (!(Composer.GetComponent(contract,job.Configuration.QueueTypeName) is IJobQueue jobQueue))
             {
                 // TODO: Log error
                 return null;

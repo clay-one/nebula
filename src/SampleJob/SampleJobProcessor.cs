@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Nebula;
 using Nebula.Queue;
 using Nebula.Storage.Model;
@@ -9,9 +8,11 @@ namespace SampleJob
 {
     public class SampleJobProcessor : IJobProcessor<SampleJobStep>
     {
+        private NebulaContext _nebulaContext;
         private static int _index;
-        public void Initialize(JobData jobData)
+        public void Initialize(JobData jobData,NebulaContext nebulaContext)
         {
+            _nebulaContext = nebulaContext;
         }
 
         public async Task<JobProcessingResult> Process(List<SampleJobStep> items)
@@ -21,12 +22,13 @@ namespace SampleJob
                 Number = _index
             };
 
-            await Program.Nebula.GetJobQueue<IJobQueue<SampleJobStep>>(typeof(SampleJobStep), "RedisJobQueue").Enqueue(initialStep, "sample-job");
+            var queue = _nebulaContext.GetJobQueue<SampleJobStep>(QueueType.Redis);
+            await queue.Enqueue(initialStep, "sample-job");
 
             _index++;
-            return null;
+           return new JobProcessingResult();
         }
-        
+
         public Task<long> GetTargetQueueLength()
         {
             return Task.FromResult(0L);

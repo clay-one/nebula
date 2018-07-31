@@ -15,7 +15,8 @@ namespace SampleJob
         private static void Main()
         {
            // Nebula.RegisterJobQueue(typeof(SampleJobQueue), nameof(SampleJobQueue));
-            Nebula.RegisterJobQueue(typeof(RedisJobQueue<>), "RedisJobQueue");
+            Nebula.RegisterJobQueue(typeof(RedisJobQueue<>), QueueType.Redis);
+            Nebula.RegisterJobProcessor(typeof(SampleJobProcessor), typeof(SampleJobStep));
             Nebula.ConnectionConfig("Connections.config");
 
             var jobManager = Nebula.GetJobManager();
@@ -34,7 +35,7 @@ namespace SampleJob
                         MaxConcurrentBatchesPerWorker = 5,
                         IsIndefinite = true,
                         MaxBlockedSecondsPerCycle = 300,
-                        QueueName = "RedisJobQueue"
+                        QueueTypeName = QueueType.Redis
                     });
 
                 var initialStep = new SampleJobStep
@@ -42,8 +43,7 @@ namespace SampleJob
                     Number = 1
                 };
 
-                await Nebula.GetJobQueue<IJobQueue<SampleJobStep>>(typeof(SampleJobStep), "RedisJobQueue")
-                    .Enqueue(initialStep, jobId);
+                await Nebula.GetJobQueue<SampleJobStep>(QueueType.Redis).Enqueue(initialStep, jobId);
 
                 await jobManager.StartJobIfNotStarted(string.Empty, nameof(SampleJobStep));
             }

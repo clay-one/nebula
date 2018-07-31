@@ -6,6 +6,7 @@ using Nebula.Job;
 using Nebula.Queue;
 using Nebula.Storage;
 using Nebula.Storage.Model;
+using Test.SampleJob;
 using Test.SampleJob.FirstJob;
 
 namespace Test
@@ -20,8 +21,7 @@ namespace Test
             var jobManager = Nebula.GetJobManager();
             var jobStore = Nebula.ComponentContext.GetComponent<IJobStore>();
 
-            var queueName = nameof(FirstJobStep);
-            Nebula.RegisterJobQueue(typeof(FirstJobQueue<>), queueName);
+            Nebula.RegisterJobQueue(typeof(FirstJobQueue<FirstJobStep>), QueueTypes.FirstJobQueue);
 
             var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(
                 String.Empty, "sample-job", nameof(FirstJobStep), new JobConfigurationData
@@ -30,13 +30,12 @@ namespace Test
                     MaxConcurrentBatchesPerWorker = 5,
                     IsIndefinite = true,
                     MaxBlockedSecondsPerCycle = 300,
-                    QueueName = queueName
+                    QueueTypeName = QueueTypes.FirstJobQueue
                 });
 
             var jobData = await jobStore.LoadFromAnyTenant(jobId);
             var jobQueue =
-                Nebula.GetJobQueue<IJobQueue<FirstJobStep>>(typeof(FirstJobStep),
-                    jobData.Configuration.QueueName);
+                Nebula.GetJobQueue<FirstJobStep>(jobData.Configuration.QueueTypeName);
 
             await jobQueue.Enqueue(new FirstJobStep(), jobData.JobId);
             await jobQueue.PurgeQueueContents(jobData.JobId);
