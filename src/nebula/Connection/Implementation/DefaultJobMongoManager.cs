@@ -5,7 +5,7 @@ using Nebula.Storage.Model;
 namespace Nebula.Connection.Implementation
 {
     [Component]
-    public class DefaultJobMongoManager : IJobMongoManager
+    internal class DefaultJobMongoManager : IJobMongoManager
     {
         [ConfigurationPoint("mongo.clientSettings")]
         public MongoClientSettings ClientSettings { get; set; }

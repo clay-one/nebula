@@ -1,6 +1,6 @@
 ﻿namespace Nebula.Connection.Implementation
 {
-    public class MongoAuthenticationSettings
+    internal class MongoAuthenticationSettings
     {
         public string AuthenticatorDbName { get; set; }
         public string Username { get; set; }

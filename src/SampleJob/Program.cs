@@ -1,27 +1,25 @@
 ﻿using System;
-using System.Reflection;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using ComposerCore;
-using ComposerCore.Implementation;
-using ComposerCore.Utility;
+using Nebula;
 using Nebula.Job;
-using Nebula.Job.Runner;
 using Nebula.Queue;
 using Nebula.Queue.Implementation;
-using Nebula.Storage;
 using Nebula.Storage.Model;
 
 namespace SampleJob
 {
     internal class Program
     {
-        public static IComposer Composer { get; set; }
-
+        public static NebulaContext  Nebula = new NebulaContext();
         private static void Main()
         {
-            Composer = ConfigureComposer();
+           // Nebula.RegisterJobQueue(typeof(SampleJobQueue), nameof(SampleJobQueue));
+            Nebula.RegisterJobQueue(typeof(RedisJobQueue<>), QueueType.Redis);
+            Nebula.RegisterJobProcessor(typeof(SampleJobProcessor), typeof(SampleJobStep));
+            Nebula.ConnectionConfig("Connections.config");
 
-            var jobManager = Composer.GetComponent<IJobManager>();
+            var jobManager = Nebula.GetJobManager();
 
             CreateJob(jobManager).Wait();
         }
@@ -36,7 +34,8 @@ namespace SampleJob
                         MaxBatchSize = 100,
                         MaxConcurrentBatchesPerWorker = 5,
                         IsIndefinite = true,
-                        MaxBlockedSecondsPerCycle = 300
+                        MaxBlockedSecondsPerCycle = 300,
+                        QueueTypeName = QueueType.Redis
                     });
 
                 var initialStep = new SampleJobStep
@@ -44,7 +43,7 @@ namespace SampleJob
                     Number = 1
                 };
 
-                await Composer.GetComponent<IJobQueue<SampleJobStep>>().Enqueue(initialStep, jobId);
+                await Nebula.GetJobQueue<SampleJobStep>(QueueType.Redis).Enqueue(initialStep, jobId);
 
                 await jobManager.StartJobIfNotStarted(string.Empty, nameof(SampleJobStep));
             }
@@ -53,28 +52,6 @@ namespace SampleJob
                 Console.WriteLine(e);
                 throw;
             }
-        }
-
-        private static IComposer ConfigureComposer()
-        {
-            var composer = new ComponentContext();
-            var assembly = Assembly.Load("SampleJob");
-
-            composer.RegisterAssembly(assembly);
-            composer.RegisterAssembly("Nebula");
-            composer.ProcessCompositionXml("Connections.config");
-
-            composer.Configuration.DisableAttributeChecking = true;
-            composer.Register(typeof(IJobQueue<>), typeof(RedisJobQueue<>));
-
-            // ReSharper disable UnusedVariable
-            var jobProcessor = composer.GetComponent<IJobProcessor<SampleJobStep>>();
-            var jobStore = composer.GetComponent<IJobStore>();
-            var jobRunnerManager = composer.GetComponent<IJobRunnerManager>();
-            var jobStatisticsCalculator = composer.GetComponent<JobStatisticsCalculator>();
-            var jobNotification = composer.GetComponent<IJobNotification>();
-
-            return composer;
         }
     }
 }
