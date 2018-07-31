@@ -13,7 +13,7 @@ using Nebula.Storage.Model;
 namespace Nebula.Job.Implementation
 {
     [Component]
-    public class DefaultJobRunnerManager : IJobRunnerManager
+    internal class DefaultJobRunnerManager : IJobRunnerManager
     {
         [ComponentPlug]
         public IJobStore JobStore { get; set; }

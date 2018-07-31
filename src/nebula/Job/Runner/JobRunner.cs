@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using ComposerCore;
 using ComposerCore.Attributes;
 using hydrogen.General.Collections;
 using log4net;
@@ -12,7 +13,7 @@ using Nebula.Storage.Model;
 
 namespace Nebula.Job.Runner
 {
-    public class JobRunner
+    internal class JobRunner
     {
         protected static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -20,7 +21,7 @@ namespace Nebula.Job.Runner
 
     [Component]
     [ComponentCache(null)]
-    public class JobRunner<TJobStep> : JobRunner, IJobRunner<TJobStep> where TJobStep : IJobStep
+    internal class JobRunner<TJobStep> : JobRunner, IJobRunner<TJobStep> where TJobStep : IJobStep
     {
         private const int WaitMillisWhenTargetQueueIsFull = 1000;
         private const int WaitMillisWhenThereIsNoMoreWork = 2000;
@@ -34,7 +35,7 @@ namespace Nebula.Job.Runner
 
         private const int DefaultIdleSecondsToCompletion = 30;
 
-        private readonly IJobQueue<TJobStep> _queue;
+        private readonly IComposer _composer;
         private readonly IJobProcessor<TJobStep> _processor;
         private readonly IJobStore _jobStore;
         private readonly IJobRunnerManager _jobRunnerManager;
@@ -54,11 +55,14 @@ namespace Nebula.Job.Runner
 
         private volatile JobStatusData _lastStatus;
 
+        [ComponentPlug]
+        public NebulaContext NebulaContext { get; set; }
+
         [CompositionConstructor]
-        public JobRunner(IJobQueue<TJobStep> queue, IJobProcessor<TJobStep> processor, IJobStore jobStore,
+        public JobRunner(IComposer composer, IJobProcessor<TJobStep> processor, IJobStore jobStore,
             IJobRunnerManager jobRunnerManager, JobStatisticsCalculator statistics, IJobNotification jobNotification)
         {
-            _queue = queue;
+            _composer = composer;
             _processor = processor;
             _jobStore = jobStore;
             _jobRunnerManager = jobRunnerManager;
@@ -88,7 +92,7 @@ namespace Nebula.Job.Runner
             _jobId = jobData.JobId;
             _jobData = jobData;
             _lastStatus = jobData.Status;
-            _processor.Initialize(_jobData);
+            _processor.Initialize(_jobData, NebulaContext);
             
             Log.Info($"Job runner {_jobId} - Performing runner initialization");
 
@@ -143,7 +147,9 @@ namespace Nebula.Job.Runner
             if (_jobData.Configuration.IsIndefinite)
                 return false;
 
-            if (await _queue.GetQueueLength(_jobId) > 0)
+            var queue = _composer.GetComponent<IJobQueue<TJobStep>>(_jobData.Configuration.QueueTypeName);
+
+            if (await queue.GetQueueLength(_jobId) > 0)
                 return false;
 
             // JobRunnerManager always runs preprocessor tasks before running a task. So, it will siffice
@@ -383,7 +389,10 @@ namespace Nebula.Job.Runner
                 _statistics.ReportDequeueAttempt();
 
                 var nextBatchSize = Math.Min(throttledBatchSize, _jobData.Configuration.MaxBatchSize);
-                steps = (await _queue.DequeueBatch(nextBatchSize, _jobId)).SafeToList();
+
+                var queue = _composer.GetComponent<IJobQueue<TJobStep>>(_jobData.Configuration.QueueTypeName);
+
+                steps = (await queue.DequeueBatch(nextBatchSize, _jobId)).SafeToList();
                 if (steps == null || steps.Count <= 0)
                 {
                     Log.Debug($"Job runner {_jobId} - There's no more work to do");

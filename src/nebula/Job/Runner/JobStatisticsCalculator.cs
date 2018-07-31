@@ -12,7 +12,7 @@ namespace Nebula.Job.Runner
     [Contract]
     [Component]
     [ComponentCache(null)]
-    public class JobStatisticsCalculator
+    internal class JobStatisticsCalculator
     {
         private const int SecondsBetweenFlushes = 4;
         

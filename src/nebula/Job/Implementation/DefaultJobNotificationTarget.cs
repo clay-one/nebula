@@ -4,7 +4,7 @@ using ComposerCore.Attributes;
 namespace Nebula.Job.Implementation
 {
     [Component]
-    public class DefaultJobNotificationTarget : IJobNotificationTarget
+    internal class DefaultJobNotificationTarget : IJobNotificationTarget
     {
         [ComponentPlug]
         public IJobRunnerManager RunnerManager { get; set; }
