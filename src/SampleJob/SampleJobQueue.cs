@@ -5,7 +5,7 @@ using Nebula.Queue;
 
 namespace SampleJob
 {
-    public class SampleJobQueue : IJobQueue<SampleJobStep>
+    public class SampleJobQueue<TItem> : IJobQueue<SampleJobStep>
     {
         public Task EnsureJobQueueExists(string jobId = null)
         {
@@ -19,12 +19,12 @@ namespace SampleJob
 
         public Task PurgeQueueContents(string jobId = null)
         {
-            throw new NotImplementedException();
+           return Task.CompletedTask;
         }
 
         public Task Enqueue(SampleJobStep item, string jobId = null)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         public Task EnqueueBatch(IEnumerable<SampleJobStep> items, string jobId = null)

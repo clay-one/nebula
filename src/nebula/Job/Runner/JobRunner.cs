@@ -55,6 +55,9 @@ namespace Nebula.Job.Runner
 
         private volatile JobStatusData _lastStatus;
 
+        [ComponentPlug]
+        public NebulaContext NebulaContext { get; set; }
+
         [CompositionConstructor]
         public JobRunner(IComposer composer, IJobProcessor<TJobStep> processor, IJobStore jobStore,
             IJobRunnerManager jobRunnerManager, JobStatisticsCalculator statistics, IJobNotification jobNotification)
@@ -89,7 +92,7 @@ namespace Nebula.Job.Runner
             _jobId = jobData.JobId;
             _jobData = jobData;
             _lastStatus = jobData.Status;
-            _processor.Initialize(_jobData);
+            _processor.Initialize(_jobData, NebulaContext);
             
             Log.Info($"Job runner {_jobId} - Performing runner initialization");
 
@@ -144,7 +147,7 @@ namespace Nebula.Job.Runner
             if (_jobData.Configuration.IsIndefinite)
                 return false;
 
-            var queue = _composer.GetComponent<IJobQueue<TJobStep>>(_jobData.Configuration.QueueName);
+            var queue = _composer.GetComponent<IJobQueue<TJobStep>>(_jobData.Configuration.QueueTypeName);
 
             if (await queue.GetQueueLength(_jobId) > 0)
                 return false;
@@ -387,7 +390,7 @@ namespace Nebula.Job.Runner
 
                 var nextBatchSize = Math.Min(throttledBatchSize, _jobData.Configuration.MaxBatchSize);
 
-                var queue = _composer.GetComponent<IJobQueue<TJobStep>>(_jobData.Configuration.QueueName);
+                var queue = _composer.GetComponent<IJobQueue<TJobStep>>(_jobData.Configuration.QueueTypeName);
 
                 steps = (await queue.DequeueBatch(nextBatchSize, _jobId)).SafeToList();
                 if (steps == null || steps.Count <= 0)

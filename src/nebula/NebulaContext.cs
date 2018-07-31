@@ -2,6 +2,8 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using ComposerCore;
+using ComposerCore.Attributes;
+using ComposerCore.Factories;
 using ComposerCore.Implementation;
 using ComposerCore.Utility;
 using Nebula.Job;
@@ -12,6 +14,7 @@ using Nebula.Worker;
 
 namespace Nebula
 {
+    [Contract]
     public class NebulaContext
     {
         public NebulaContext()
@@ -22,20 +25,20 @@ namespace Nebula
 
         internal IComponentContext ComponentContext { get; set; }
 
-        public void RegisterJobProcessor(Type processor)
+        public void RegisterJobProcessor(Type processor, Type stepType)
         {
-            ComponentContext.Register(typeof(IJobProcessor<>), processor);
+            var contract = typeof(IJobProcessor<>).MakeGenericType(stepType);
+            ComponentContext.Register(contract, processor);
         }
 
-        public void RegisterJobQueue(Type jobQueue, string queueName)
+        public void RegisterJobQueue(Type jobQueue, string queueTypeName)
         {
-            ComponentContext.Register(typeof(IJobQueue<>), queueName, jobQueue);
+            ComponentContext.Register(typeof(IJobQueue<>), queueTypeName, jobQueue);
         }
 
-        public TJobQueue GetJobQueue<TJobQueue>(Type stepType, string queueName) where TJobQueue : class
+        public IJobQueue<TJobStep> GetJobQueue<TJobStep>(string queueTypeName) where TJobStep : IJobStep
         {
-            var contract = typeof(IJobQueue<>).MakeGenericType(stepType);
-            return ComponentContext.GetComponent(contract, queueName) as TJobQueue;
+            return ComponentContext.GetComponent(typeof(IJobQueue<TJobStep>), queueTypeName) as IJobQueue<TJobStep>;
         }
 
         public IJobManager GetJobManager()
@@ -69,6 +72,7 @@ namespace Nebula
 
             var assembly = Assembly.Load("Nebula");
             context.RegisterAssembly(assembly);
+            context.Register(typeof(NebulaContext), new PreInitializedComponentFactory(this));
 
             context.Configuration.DisableAttributeChecking = true;
             ComponentContext = context;

@@ -1,5 +1,8 @@
 ﻿using System;
 using Nebula;
+using Nebula.Queue;
+using Nebula.Queue.Implementation;
+using SampleJob;
 
 namespace SampleWorker
 {
@@ -10,6 +13,8 @@ namespace SampleWorker
             Console.WriteLine("Abaci.JobQueue.Worker worker service...");
 
             var nebulaContext = new NebulaContext();
+            nebulaContext.RegisterJobQueue(typeof(RedisJobQueue<>), QueueType.Redis);
+            nebulaContext.RegisterJobProcessor(typeof(SampleJobProcessor),typeof(SampleJobStep));
             nebulaContext.ConnectionConfig("Connections.config");
 
             nebulaContext.StartWorkerService();
