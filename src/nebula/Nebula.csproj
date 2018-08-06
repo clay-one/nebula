@@ -20,7 +20,7 @@
     <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.6" />
     <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
-    <PackageReference Include="ServiceStack.Text" Version="5.1.0" />
+    <PackageReference Include="ServiceStack.Text.Core" Version="5.1.0" />
     <PackageReference Include="StackExchange.Redis" Version="1.2.6" />
   </ItemGroup>
 
