@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="clay-one.hydrogen.General" Version="0.9.3" />
+    <PackageReference Include="ClayOne.Hydrogen.General" Version="0.0.14" />
     <PackageReference Include="ComposerCore" Version="2.0.12" />
     <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.6" />
