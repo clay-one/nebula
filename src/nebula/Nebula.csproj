@@ -8,6 +8,7 @@
     <Company>clay-one</Company>
     <Description>Nebula is background worker for .NET Core and .NET Framework projects</Description>
     <PackageId>ClayOne.Nebula</PackageId>
+    <Version>0.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
