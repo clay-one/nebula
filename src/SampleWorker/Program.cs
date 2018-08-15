@@ -15,7 +15,8 @@ namespace SampleWorker
             var nebulaContext = new NebulaContext();
             nebulaContext.RegisterJobQueue(typeof(RedisJobQueue<>), QueueType.Redis);
             nebulaContext.RegisterJobProcessor(typeof(SampleJobProcessor),typeof(SampleJobStep));
-            nebulaContext.ConnectionConfig("Connections.config");
+            nebulaContext.MongoConnectionString = "mongodb://localhost:27017/SampleJob";
+            nebulaContext.RedisConnectionString = "localhost:6379";
 
             nebulaContext.StartWorkerService();
 

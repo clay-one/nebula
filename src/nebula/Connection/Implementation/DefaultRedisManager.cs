@@ -7,9 +7,9 @@ namespace Nebula.Connection.Implementation
     internal class DefaultRedisManager : IRedisManager
     {
         private ConnectionMultiplexer _connectionMultiplexer;
-
-        [ConfigurationPoint("redis.configurationString")]
-        public string ConfigurationString { get; set; }
+        
+        [ComponentPlug]
+        public NebulaContext NebulaContext { get; set; }
 
         public IDatabase GetDatabase()
         {
@@ -24,7 +24,7 @@ namespace Nebula.Connection.Implementation
         [OnCompositionComplete]
         public void OnCompositionComplete()
         {
-            var options = ConfigurationOptions.Parse(ConfigurationString);
+            var options = ConfigurationOptions.Parse(NebulaContext.RedisConnectionString);
             _connectionMultiplexer = ConnectionMultiplexer.Connect(options);
         }
     }

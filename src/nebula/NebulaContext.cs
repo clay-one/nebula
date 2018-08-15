@@ -25,6 +25,9 @@ namespace Nebula
 
         internal IComponentContext ComponentContext { get; set; }
 
+        public string MongoConnectionString { get; set; }
+        public string RedisConnectionString { get; set; }
+        
         public void RegisterJobProcessor(Type processor, Type stepType)
         {
             var contract = typeof(IJobProcessor<>).MakeGenericType(stepType);
@@ -77,6 +80,5 @@ namespace Nebula
             context.Configuration.DisableAttributeChecking = true;
             ComponentContext = context;
         }
-
     }
 }
