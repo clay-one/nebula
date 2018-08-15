@@ -1,8 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<CompositionInfo xmlns="http://www.compositional.net/schema/compositionXml.1.0.xsd">
-
-  <RegisterAssembly fullName="SampleWorker"/>
-  <RegisterAssembly fullName="SampleJob"/>
-  <RegisterAssembly fullName="Nebula"/>
-  
-</CompositionInfo>

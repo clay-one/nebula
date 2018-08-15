@@ -11,18 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Composition.xml" />
     <None Remove="Connections.config" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Connections.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Composition.xml" />
   </ItemGroup>
 
   <ItemGroup>

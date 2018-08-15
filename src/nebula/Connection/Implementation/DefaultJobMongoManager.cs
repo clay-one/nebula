@@ -1,4 +1,5 @@
-﻿using ComposerCore.Attributes;
+﻿using System.Configuration;
+using ComposerCore.Attributes;
 using MongoDB.Driver;
 using Nebula.Storage.Model;
 
@@ -7,17 +8,8 @@ namespace Nebula.Connection.Implementation
     [Component]
     internal class DefaultJobMongoManager : IJobMongoManager
     {
-        [ConfigurationPoint("mongo.clientSettings")]
-        public MongoClientSettings ClientSettings { get; set; }
-
-        [ConfigurationPoint("mongo.databaseName")]
-        public string DatabaseName { get; set; }
-
-        [ConfigurationPoint("mongo.databaseSettings")]
-        public MongoDatabaseSettings DatabaseSettings { get; set; }
-
-        [ConfigurationPoint("mongo.authenticationSettings", false)]
-        public MongoAuthenticationSettings AuthenticationSettings { get; set; }
+        [ComponentPlug]
+        public NebulaContext NebulaContext { get; set; }
 
         public IMongoDatabase Database { get; private set; }
 
@@ -31,16 +23,16 @@ namespace Nebula.Connection.Implementation
         [OnCompositionComplete]
         public void OnCompositionComplete()
         {
-            if (AuthenticationSettings != null)
-            {
-                ClientSettings.Credential = MongoCredential.CreateCredential(AuthenticationSettings.AuthenticatorDbName,
-                    AuthenticationSettings.Username, AuthenticationSettings.Password);
-            }
-            
-            var client = new MongoClient(ClientSettings);
-            Database = client.GetDatabase(DatabaseName, DatabaseSettings);
+            var connectionString = NebulaContext.MongoConnectionString;
+
+            var mongoUrl = MongoUrl.Create(connectionString);
+            var databaseName = mongoUrl.DatabaseName;
+
+            var client = new MongoClient(mongoUrl);
+            Database = client.GetDatabase(databaseName);
             Jobs = Database.GetCollection<JobData>(nameof(JobData));
 
         }
+
     }
 }

@@ -10,13 +10,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Connections.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <ProjectReference Include="..\nebula\Nebula.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\nebula\Nebula.csproj" />
+    <Reference Include="System">
+      <HintPath>System</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

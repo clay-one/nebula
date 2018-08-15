@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Nebula;
 using Nebula.Job;
@@ -17,7 +16,8 @@ namespace SampleJob
            // Nebula.RegisterJobQueue(typeof(SampleJobQueue), nameof(SampleJobQueue));
             Nebula.RegisterJobQueue(typeof(RedisJobQueue<>), QueueType.Redis);
             Nebula.RegisterJobProcessor(typeof(SampleJobProcessor), typeof(SampleJobStep));
-            Nebula.ConnectionConfig("Connections.config");
+            Nebula.MongoConnectionString = "mongodb://localhost:27017/SampleJob";
+            Nebula.RedisConnectionString = "localhost:6379";
 
             var jobManager = Nebula.GetJobManager();
 
