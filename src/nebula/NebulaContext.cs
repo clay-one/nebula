@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using ComposerCore;
@@ -25,10 +26,26 @@ namespace Nebula
 
         internal IComponentContext ComponentContext { get; set; }
 
+        public string MongoConnectionString { get; set; }
+        public string RedisConnectionString { get; set; }
+        
         public void RegisterJobProcessor(Type processor, Type stepType)
         {
             var contract = typeof(IJobProcessor<>).MakeGenericType(stepType);
             ComponentContext.Register(contract, processor);
+        }
+
+        public void RegisterJobProcessor(object processor, Type stepType)
+        {
+            var contract = typeof(IJobProcessor<>).MakeGenericType(stepType);
+
+            var isTypeCorrect = processor.GetType().GetInterfaces().Any(x =>
+                x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IJobProcessor<>));
+
+            if (!isTypeCorrect)
+                throw new ArgumentException("processor should implement IJobProcessor<>");
+
+            ComponentContext.Register(contract, new PreInitializedComponentFactory(processor));
         }
 
         public void RegisterJobQueue(Type jobQueue, string queueTypeName)
@@ -77,6 +94,5 @@ namespace Nebula
             context.Configuration.DisableAttributeChecking = true;
             ComponentContext = context;
         }
-
     }
 }

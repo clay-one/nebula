@@ -19,7 +19,7 @@ namespace SampleJob
         {
             var initialStep = new SampleJobStep
             {
-                Number = _index
+                Number = 10000
             };
 
             var queue = _nebulaContext.GetJobQueue<SampleJobStep>(QueueType.Redis);

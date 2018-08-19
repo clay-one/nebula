@@ -62,11 +62,21 @@ namespace Nebula.Job.Runner
         private JobStatusErrorData BuildErrorData()
         {
             // TODO: Add _exception information too
-             
+
+            var message = $"{_errorMessage}: {_exception.Message}";
+
+            var exception = _exception;
+            while (exception?.InnerException != null)
+            {
+                message += Environment.NewLine + _exception.InnerException.Message;
+                exception = exception.InnerException;
+            }
+
             return new JobStatusErrorData
             {
-                ErrorMessage = _errorMessage,
-                Timestamp = DateTime.UtcNow.Ticks
+                ErrorMessage = message,
+                Timestamp = DateTime.UtcNow.Ticks,
+                StackTrace = _exception?.StackTrace
             };
         }
     }

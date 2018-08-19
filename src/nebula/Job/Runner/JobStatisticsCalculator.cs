@@ -163,13 +163,18 @@ namespace Nebula.Job.Runner
         private void ReportException(string source, Exception exception)
         {
             var message = $"{source}: {exception.Message}";
-            if (exception.InnerException != null)
+            
+            while (exception?.InnerException != null)
+            {
                 message += Environment.NewLine + exception.InnerException.Message;
-
+                exception = exception.InnerException;
+            }
+            
             _jobStore.AddException(_tenantId, _jobId, new JobStatusErrorData
                 {
                     ErrorMessage = message,
-                    Timestamp = DateTime.UtcNow.Ticks
+                    Timestamp = DateTime.UtcNow.Ticks,
+                    StackTrace = exception.StackTrace
                 })
                 .GetAwaiter()
                 .GetResult();
