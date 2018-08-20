@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ComposerCore.Attributes;
 using Nebula.Storage;
@@ -10,16 +11,18 @@ namespace Test.Mock
     [Component]
     public class MockJobStore : IJobStore
     {
-        private readonly Dictionary<string, JobData> _jobs = new Dictionary<string, JobData>();
+        private readonly Dictionary<string, Dictionary<string, JobData>> _jobs =
+            new Dictionary<string, Dictionary<string, JobData>>();
 
         public Task<List<JobData>> LoadAll(string tenantId)
         {
             throw new NotImplementedException();
         }
 
-        public Task<JobData> Load(string tenantId, string jobId)
+        public async Task<JobData> Load(string tenantId, string jobId)
         {
-            throw new NotImplementedException();
+            _jobs.TryGetValue(tenantId, out var value);
+            return value[jobId];
         }
 
         public Task<JobStatusData> LoadStatus(string tenantId, string jobId)
@@ -29,7 +32,7 @@ namespace Test.Mock
 
         public async Task<JobData> LoadFromAnyTenant(string jobId)
         {
-            return _jobs[jobId];
+            return _jobs.Values.Where(a => a.ContainsKey(jobId)).Select(datas => datas[jobId]).SingleOrDefault();
         }
 
         public Task<List<string>> LoadAllRunnableIdsFromAnyTenant()
@@ -39,7 +42,11 @@ namespace Test.Mock
 
         public async Task<JobData> AddOrUpdateDefinition(JobData jobData)
         {
-            _jobs.Add(jobData.JobId,jobData);
+            if (!_jobs.ContainsKey(jobData.TenantId))
+                _jobs[jobData.TenantId] = new Dictionary<string, JobData>();
+
+            _jobs[jobData.TenantId].Add(jobData.JobId, jobData);
+
             return jobData;
         }
 

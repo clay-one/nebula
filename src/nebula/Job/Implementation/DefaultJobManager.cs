@@ -39,7 +39,6 @@ namespace Nebula.Job.Implementation
         {
             if (string.IsNullOrWhiteSpace(jobId))
                 jobId = Base32Url.ToBase32String(Guid.NewGuid().ToByteArray());
-            configuration = configuration ?? new JobConfigurationData();
 
             ValidateAndFixConfiguration(configuration);
             
@@ -251,9 +250,12 @@ namespace Nebula.Job.Implementation
         }
 
         #region Private helper methods
-        
+
         private void ValidateAndFixConfiguration(JobConfigurationData configuration)
         {
+            if (configuration == null)
+                throw new ArgumentException("Configuration cannot null");
+
             configuration.MaxBatchSize = Math.Max(1, Math.Min(1000, configuration.MaxBatchSize));
             configuration.MaxConcurrentBatchesPerWorker =
                 Math.Max(1, Math.Min(10000, configuration.MaxConcurrentBatchesPerWorker));
@@ -267,11 +269,11 @@ namespace Nebula.Job.Implementation
                 throw new ArgumentException("Throttle burst size cannot be zero or negative");
             if (configuration.ThrottledMaxBurstSize.HasValue)
                 configuration.ThrottledMaxBurstSize = Math.Max(1, configuration.ThrottledMaxBurstSize.Value);
-            
+
             if (configuration.ExpiresAt.HasValue && configuration.ExpiresAt < DateTime.Now)
                 throw new ArgumentException("Job is already expired and cannot be added");
 
-            if(configuration.QueueTypeName == null)
+            if (configuration.QueueTypeName == null)
                 throw new ArgumentException("QueueTypeName must be specified in job configuration");
 
             if (configuration.IdleSecondsToCompletion.HasValue)
