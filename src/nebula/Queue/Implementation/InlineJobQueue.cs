@@ -13,8 +13,11 @@ namespace Nebula.Queue.Implementation
         [ComponentPlug]
         public IJobProcessor<TItem> Processor { get; set; }
 
+        public bool QueueExistenceChecked { get; set; }
+
         public Task EnsureJobQueueExists(string jobId = null)
         {
+            QueueExistenceChecked = true;
             return Task.CompletedTask;
         }
 
@@ -40,7 +43,7 @@ namespace Nebula.Queue.Implementation
 
         public Task<TItem> Dequeue(string jobId = null)
         {
-            return Task.FromResult<TItem>(default(TItem));
+            return Task.FromResult(default(TItem));
         }
 
         public Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)

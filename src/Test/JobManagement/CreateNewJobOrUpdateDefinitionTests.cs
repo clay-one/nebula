@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using hydrogen.General.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nebula.Multitenancy;
@@ -56,5 +55,19 @@ namespace Test.JobManagement
             Assert.IsTrue(!jobId.IsNullOrWhitespace());
         }
 
+        [TestMethod]
+        public async Task CreateJob_NewJob_QueueExistenceCheck()
+        {
+            Nebula.RegisterJobQueue(typeof(InMemoryJobQueue<FirstJobStep>), QueueType.InMemory);
+
+            var jobManager = Nebula.GetJobManager();
+            await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(_tenant.Id,
+                configuration: new JobConfigurationData {QueueTypeName = QueueType.InMemory});
+
+            var queue = Nebula.GetJobQueue<FirstJobStep>(QueueType.InMemory);
+
+            Assert.IsNotNull(queue);
+            Assert.IsTrue(queue.QueueExistenceChecked);
+        }
     }
 }

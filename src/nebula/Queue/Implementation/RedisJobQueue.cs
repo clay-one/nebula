@@ -15,8 +15,11 @@ namespace Nebula.Queue.Implementation
         [ComponentPlug]
         public IRedisManager RedisManager { get; set; }
 
+        public bool QueueExistenceChecked { get; set; }
+
         public Task EnsureJobQueueExists(string jobId = null)
         {
+            QueueExistenceChecked = true;
             // Redis lists are created upon adding first item, so nothing to do here.
             return Task.CompletedTask;
         }
@@ -54,7 +57,7 @@ namespace Nebula.Queue.Implementation
         {
             if (maxBatchSize < 1 || maxBatchSize > 10000)
                 throw new ArgumentException("MaxBatchSize is out of range");
-            
+
             var redisKey = GetRedisKey(jobId);
             var redisDb = RedisManager.GetDatabase();
             var tasks = Enumerable
@@ -63,7 +66,7 @@ namespace Nebula.Queue.Implementation
 
             var results = await Task.WhenAll(tasks);
             return results
-                .Select(r => (string)r)
+                .Select(r => (string) r)
                 .Where(s => !string.IsNullOrWhiteSpace(s))
                 .Select(s => s.FromJson<TItem>());
         }

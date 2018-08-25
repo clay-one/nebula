@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Nebula.Queue;
 
 namespace Test.SampleJob.SecondJob
 {
     public class SecondJobQueue<TItem> : IJobQueue<TItem> where TItem : IJobStep
     {
+        public bool QueueExistenceChecked { get; set; }
+
         public Task EnsureJobQueueExists(string jobId = null)
         {
+            QueueExistenceChecked = true;
             return Task.CompletedTask;
         }
 
