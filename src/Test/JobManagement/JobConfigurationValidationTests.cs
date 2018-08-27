@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Nebula.Multitenancy;
 using Nebula.Queue;
 using Nebula.Queue.Implementation;
 using Nebula.Storage;
@@ -13,20 +12,12 @@ namespace Test.JobManagement
     [TestClass]
     public class JobConfigurationValidationTests : TestClassBase
     {
-        private readonly NullTenant _tenant = new NullTenant();
-
-        [TestInitialize]
-        public void Initialize()
-        {
-            _tenant.GetCurrentTenant();
-        }
-
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public async Task CreateJob_NullConfiguration_ExceptionThrown()
         {
             var jobManager = Nebula.GetJobManager();
-            await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(_tenant.Id);
+            await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id);
         }
 
         [TestMethod]
@@ -35,7 +26,7 @@ namespace Test.JobManagement
             Nebula.RegisterJobQueue(typeof(InMemoryJobQueue<FirstJobStep>), QueueType.InMemory);
 
             var jobManager = Nebula.GetJobManager();
-            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(_tenant.Id,
+            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
                     MaxBatchSize = JobConfigurationDefaultValue.MinBatchSize - 1,
@@ -43,7 +34,7 @@ namespace Test.JobManagement
                 });
 
             var jobStore = Nebula.ComponentContext.GetComponent(typeof(IJobStore)) as IJobStore;
-            var job = await jobStore?.Load(_tenant.Id, jobId);
+            var job = await jobStore?.Load(Tenant.Id, jobId);
 
             Assert.IsTrue(job.Configuration.MaxBatchSize >= JobConfigurationDefaultValue.MinBatchSize);
         }
@@ -54,7 +45,7 @@ namespace Test.JobManagement
             Nebula.RegisterJobQueue(typeof(InMemoryJobQueue<FirstJobStep>), QueueType.InMemory);
 
             var jobManager = Nebula.GetJobManager();
-            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(_tenant.Id,
+            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
                     MaxBatchSize = JobConfigurationDefaultValue.MaxBatchSize + 1,
@@ -62,7 +53,7 @@ namespace Test.JobManagement
                 });
 
             var jobStore = Nebula.ComponentContext.GetComponent(typeof(IJobStore)) as IJobStore;
-            var job = await jobStore?.Load(_tenant.Id, jobId);
+            var job = await jobStore?.Load(Tenant.Id, jobId);
 
             Assert.IsTrue(job.Configuration.MaxBatchSize <= JobConfigurationDefaultValue.MaxBatchSize);
         }
@@ -73,7 +64,7 @@ namespace Test.JobManagement
             Nebula.RegisterJobQueue(typeof(InMemoryJobQueue<FirstJobStep>), QueueType.InMemory);
 
             var jobManager = Nebula.GetJobManager();
-            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(_tenant.Id,
+            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
                     MaxConcurrentBatchesPerWorker = JobConfigurationDefaultValue.MinConcurrentBatchesPerWorker - 1,
@@ -81,7 +72,7 @@ namespace Test.JobManagement
                 });
 
             var jobStore = Nebula.ComponentContext.GetComponent(typeof(IJobStore)) as IJobStore;
-            var job = await jobStore?.Load(_tenant.Id, jobId);
+            var job = await jobStore?.Load(Tenant.Id, jobId);
 
             Assert.IsTrue(job.Configuration.MaxConcurrentBatchesPerWorker >=
                           JobConfigurationDefaultValue.MinConcurrentBatchesPerWorker);
@@ -93,7 +84,7 @@ namespace Test.JobManagement
             Nebula.RegisterJobQueue(typeof(InMemoryJobQueue<FirstJobStep>), QueueType.InMemory);
 
             var jobManager = Nebula.GetJobManager();
-            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(_tenant.Id,
+            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
                     MaxConcurrentBatchesPerWorker = JobConfigurationDefaultValue.MaxConcurrentBatchesPerWorker + 1,
@@ -101,7 +92,7 @@ namespace Test.JobManagement
                 });
 
             var jobStore = Nebula.ComponentContext.GetComponent(typeof(IJobStore)) as IJobStore;
-            var job = await jobStore?.Load(_tenant.Id, jobId);
+            var job = await jobStore?.Load(Tenant.Id, jobId);
 
             Assert.IsTrue(job.Configuration.MaxConcurrentBatchesPerWorker <=
                           JobConfigurationDefaultValue.MaxConcurrentBatchesPerWorker);
@@ -113,7 +104,7 @@ namespace Test.JobManagement
             Nebula.RegisterJobQueue(typeof(InMemoryJobQueue<FirstJobStep>), QueueType.InMemory);
 
             var jobManager = Nebula.GetJobManager();
-            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(_tenant.Id,
+            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
                     ThrottledItemsPerSecond = JobConfigurationDefaultValue.MinThrottledItemsPerSecond - 0.0001,
@@ -121,7 +112,7 @@ namespace Test.JobManagement
                 });
 
             var jobStore = Nebula.ComponentContext.GetComponent(typeof(IJobStore)) as IJobStore;
-            var job = await jobStore?.Load(_tenant.Id, jobId);
+            var job = await jobStore?.Load(Tenant.Id, jobId);
 
             Assert.IsTrue(job.Configuration.ThrottledItemsPerSecond >=
                           JobConfigurationDefaultValue.MinThrottledItemsPerSecond);
@@ -134,7 +125,7 @@ namespace Test.JobManagement
             Nebula.RegisterJobQueue(typeof(InMemoryJobQueue<FirstJobStep>), QueueType.InMemory);
 
             var jobManager = Nebula.GetJobManager();
-            await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(_tenant.Id,
+            await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
                     ThrottledItemsPerSecond = 0,
@@ -149,7 +140,7 @@ namespace Test.JobManagement
             Nebula.RegisterJobQueue(typeof(InMemoryJobQueue<FirstJobStep>), QueueType.InMemory);
 
             var jobManager = Nebula.GetJobManager();
-            await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(_tenant.Id,
+            await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
                     ThrottledMaxBurstSize = JobConfigurationDefaultValue.MinThrottledMaxBurstSize,
@@ -164,7 +155,7 @@ namespace Test.JobManagement
             Nebula.RegisterJobQueue(typeof(InMemoryJobQueue<FirstJobStep>), QueueType.InMemory);
 
             var jobManager = Nebula.GetJobManager();
-            await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(_tenant.Id,
+            await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
                     ExpiresAt = DateTime.Now.AddDays(-1),
@@ -178,7 +169,7 @@ namespace Test.JobManagement
             Nebula.RegisterJobQueue(typeof(InMemoryJobQueue<FirstJobStep>), QueueType.InMemory);
 
             var jobManager = Nebula.GetJobManager();
-            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(_tenant.Id,
+            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
                     IdleSecondsToCompletion = JobConfigurationDefaultValue.MinIdleSecondsToCompletion - 1,
@@ -186,7 +177,7 @@ namespace Test.JobManagement
                 });
 
             var jobStore = Nebula.ComponentContext.GetComponent(typeof(IJobStore)) as IJobStore;
-            var job = await jobStore?.Load(_tenant.Id, jobId);
+            var job = await jobStore?.Load(Tenant.Id, jobId);
 
             Assert.IsTrue(job.Configuration.IdleSecondsToCompletion >=
                           JobConfigurationDefaultValue.MinIdleSecondsToCompletion);
@@ -198,7 +189,7 @@ namespace Test.JobManagement
             Nebula.RegisterJobQueue(typeof(InMemoryJobQueue<FirstJobStep>), QueueType.InMemory);
 
             var jobManager = Nebula.GetJobManager();
-            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(_tenant.Id,
+            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
                     MaxBlockedSecondsPerCycle = JobConfigurationDefaultValue.MinMaxBlockedSecondsPerCycle - 1,
@@ -206,7 +197,7 @@ namespace Test.JobManagement
                 });
 
             var jobStore = Nebula.ComponentContext.GetComponent(typeof(IJobStore)) as IJobStore;
-            var job = await jobStore?.Load(_tenant.Id, jobId);
+            var job = await jobStore?.Load(Tenant.Id, jobId);
 
             Assert.IsTrue(job.Configuration.MaxBlockedSecondsPerCycle >=
                           JobConfigurationDefaultValue.MinMaxBlockedSecondsPerCycle);
@@ -218,7 +209,7 @@ namespace Test.JobManagement
             Nebula.RegisterJobQueue(typeof(InMemoryJobQueue<FirstJobStep>), QueueType.InMemory);
 
             var jobManager = Nebula.GetJobManager();
-            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(_tenant.Id,
+            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
                     MaxTargetQueueLength = JobConfigurationDefaultValue.MinMaxTargetQueueLength - 1,
@@ -226,7 +217,7 @@ namespace Test.JobManagement
                 });
 
             var jobStore = Nebula.ComponentContext.GetComponent(typeof(IJobStore)) as IJobStore;
-            var job = await jobStore?.Load(_tenant.Id, jobId);
+            var job = await jobStore?.Load(Tenant.Id, jobId);
 
             Assert.IsTrue(job.Configuration.MaxTargetQueueLength >=
                           JobConfigurationDefaultValue.MinMaxTargetQueueLength);

@@ -22,12 +22,14 @@ namespace Test.Mock
         public async Task<JobData> Load(string tenantId, string jobId)
         {
             _jobs.TryGetValue(tenantId, out var value);
-            return value[jobId];
+            return value?[jobId];
         }
 
-        public Task<JobStatusData> LoadStatus(string tenantId, string jobId)
+        public async Task<JobStatusData> LoadStatus(string tenantId, string jobId)
         {
-            throw new NotImplementedException();
+            var job = await Load(tenantId, jobId);
+
+            return job.Status;
         }
 
         public async Task<JobData> LoadFromAnyTenant(string jobId)
@@ -52,12 +54,51 @@ namespace Test.Mock
 
         public Task<bool> UpdateState(string tenantId, string jobId, JobState? expectedState, JobState newState)
         {
-            throw new NotImplementedException();
+            _jobs.TryGetValue(tenantId, out var value);
+            var job = value?[jobId];
+            if (job == null)
+                return Task.FromResult(false);
+
+            job.Status.State = newState;
+
+            return Task.FromResult(true);
         }
 
-        public Task UpdateStatus(string tenantId, string jobId, JobStatusUpdateData change)
+        public async Task UpdateStatus(string tenantId, string jobId, JobStatusUpdateData change)
         {
-            throw new NotImplementedException();
+            var job = await Load(tenantId, jobId);
+
+            job.Status.LastIterationStartTime = job.Status.LastIterationStartTime > change.LastIterationStartTime
+                ? job.Status.LastIterationStartTime
+                : change.LastIterationStartTime;
+            job.Status.LastDequeueAttemptTime = job.Status.LastDequeueAttemptTime > change.LastDequeueAttemptTime
+                ? job.Status.LastDequeueAttemptTime
+                : change.LastDequeueAttemptTime;
+            job.Status.LastProcessStartTime = job.Status.LastProcessStartTime > change.LastProcessStartTime
+                ? job.Status.LastProcessStartTime
+                : change.LastProcessStartTime;
+            job.Status.LastProcessFinishTime = job.Status.LastProcessFinishTime > change.LastProcessFinishTime
+                ? job.Status.LastProcessFinishTime
+                : change.LastProcessFinishTime;
+            job.Status.LastHealthCheckTime = job.Status.LastHealthCheckTime > change.LastHealthCheckTime
+                ? job.Status.LastHealthCheckTime
+                : change.LastHealthCheckTime;
+            job.Status.ItemsProcessed += change.ItemsProcessedDelta;
+            job.Status.ItemsRequeued += change.ItemsRequeuedDelta;
+            job.Status.ItemsGeneratedForTargetQueue += change.ItemsGeneratedForTargetQueueDelta;
+            job.Status.ProcessingTimeTakenMillis += change.ProcessingTimeTakenMillisDelta;
+            job.Status.ItemsFailed += change.ItemsFailedDelta;
+
+            if (change.LastFailTime.HasValue)
+                job.Status.LastFailTime = job.Status.LastFailTime > change.LastFailTime
+                    ? job.Status.LastFailTime
+                    : change.LastFailTime.Value;
+
+            if (change.LastFailures != null && change.LastFailures.Length > 0)
+            {
+                foreach (var jobStatusErrorData in change.LastFailures)
+                    job.Status.LastFailures.Append(jobStatusErrorData);
+            }
         }
 
         public Task AddException(string tenantId, string jobId, JobStatusErrorData jobStatusErrorData)
