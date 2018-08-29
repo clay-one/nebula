@@ -46,13 +46,41 @@ namespace Test.JobManagement
             var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData {QueueTypeName = QueueType.InMemory});
 
-            var v = Nebula.ComponentContext.GetComponent(typeof(IJobProcessor<FirstJobStep>));
-
             await jobManager.StartJob(Tenant.Id, jobId);
 
             var jobRunnerManager = Nebula.ComponentContext.GetComponent<IJobRunnerManager>();
 
             Assert.IsTrue(jobRunnerManager.IsJobRunnerStarted(jobId));
+        }
+
+        [TestMethod]
+        public async Task StartJob_EnqueueOneItem_QueueShouldBeEmpty()
+        {
+            Nebula.RegisterJobQueue(typeof(InMemoryJobQueue<FirstJobStep>), QueueType.InMemory);
+            Nebula.RegisterJobProcessor(typeof(FirstJobProcessor), typeof(FirstJobStep));
+
+            var jobManager = Nebula.GetJobManager();
+            var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
+                configuration: new JobConfigurationData {QueueTypeName = QueueType.InMemory});
+
+            var queue = Nebula.GetJobQueue<FirstJobStep>(QueueType.InMemory);
+            await queue.Enqueue(new FirstJobStep {Number = 1}, jobId);
+
+            var initialLength = await queue.GetQueueLength(jobId);
+
+            await jobManager.StartJob(Tenant.Id, jobId);
+
+            //await Task.Delay(10);
+
+            var processedLength = await queue.GetQueueLength(jobId);
+
+            var jobRunnerManager = Nebula.ComponentContext.GetComponent<IJobRunnerManager>();
+
+            Assert.IsTrue(jobRunnerManager.IsJobRunnerStarted(jobId));
+            Assert.AreEqual(1, initialLength);
+
+            Assert.Inconclusive("todo: checxk if queue is empty");
+            Assert.AreEqual(0, processedLength);
         }
     }
 }
