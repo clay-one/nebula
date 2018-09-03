@@ -254,7 +254,12 @@ namespace Nebula.Job.Runner
         {
             Log.Info($"Job runner {_jobId} - Setting job state to Completed");
             if (await _jobStore.UpdateState(_tenantId, _jobId, _lastStatus.State, JobState.Completed))
+            {
                 await _jobNotification.NotifyJobUpdated(_jobId);
+
+                var finalizableProcessor = _processor as IFinalizableJobProcessor<TJobStep>;
+                finalizableProcessor?.Initialize();
+            }
         }
 
         private void StartProcess()

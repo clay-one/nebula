@@ -17,10 +17,7 @@ namespace SampleJob
 
             // register processor by type
             // Nebula.RegisterJobProcessor(typeof(SampleJobProcessor), typeof(SampleJobStep));
-
-            // register processor object
-            Nebula.RegisterJobProcessor(new SampleJobProcessor(), typeof(SampleJobStep));
-
+            
             Nebula.MongoConnectionString = "mongodb://localhost:27017/SampleJob";
             Nebula.RedisConnectionString = "localhost:6379";
 
@@ -38,7 +35,7 @@ namespace SampleJob
                     {
                         MaxBatchSize = 100,
                         MaxConcurrentBatchesPerWorker = 5,
-                        IsIndefinite = true,
+                        IsIndefinite = false,
                         MaxBlockedSecondsPerCycle = 300,
                         QueueTypeName = QueueType.Redis
                     });
