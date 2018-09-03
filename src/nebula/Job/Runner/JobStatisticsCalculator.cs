@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using ComposerCore.Attributes;
+using log4net;
 using Nebula.Queue;
 using Nebula.Storage;
 using Nebula.Storage.Model;
@@ -14,6 +15,9 @@ namespace Nebula.Job.Runner
     [ComponentCache(null)]
     internal class JobStatisticsCalculator
     {
+        protected static readonly ILog Log =
+            LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         private const int SecondsBetweenFlushes = 4;
         
         private readonly IJobStore _jobStore;
@@ -163,21 +167,28 @@ namespace Nebula.Job.Runner
         private void ReportException(string source, Exception exception)
         {
             var message = $"{source}: {exception.Message}";
-            
+
             while (exception?.InnerException != null)
             {
                 message += Environment.NewLine + exception.InnerException.Message;
                 exception = exception.InnerException;
             }
-            
-            _jobStore.AddException(_tenantId, _jobId, new JobStatusErrorData
-                {
-                    ErrorMessage = message,
-                    Timestamp = DateTime.UtcNow.Ticks,
-                    StackTrace = exception.StackTrace
-                })
-                .GetAwaiter()
-                .GetResult();
+
+            try
+            {
+                _jobStore.AddException(_tenantId, _jobId, new JobStatusErrorData
+                    {
+                        ErrorMessage = message,
+                        Timestamp = DateTime.UtcNow.Ticks,
+                        StackTrace = exception.StackTrace
+                    })
+                    .GetAwaiter()
+                    .GetResult();
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Job runner {_jobId} - Could not add exception due to exception", e);
+            }
         }
 
         private void FlushInternal()
@@ -214,8 +225,16 @@ namespace Nebula.Job.Runner
                 if (faults.Count > 0)
                     change.LastFailures = faults.ToArray();
             }
+
+            try
+            {
+                _jobStore.UpdateStatus(_tenantId, _jobId, change).GetAwaiter().GetResult();
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Job runner {_jobId} - Could not flush statistics due to exception", e);
+            }
             
-            _jobStore.UpdateStatus(_tenantId, _jobId, change).GetAwaiter().GetResult();
         }
 
         private void FlushIfNecessary()
