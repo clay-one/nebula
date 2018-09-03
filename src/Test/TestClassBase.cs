@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nebula;
 using Nebula.Job;
+using Nebula.Multitenancy;
 using Nebula.Storage;
 using Test.Mock;
 
@@ -10,10 +11,13 @@ namespace Test
     public abstract class TestClassBase
     {
         protected static NebulaContext Nebula;
+        protected readonly NullTenant Tenant = new NullTenant();
+
 
         [TestInitialize]
         public void ClassInit()
         {
+            Tenant.GetCurrentTenant();
             Nebula = new NebulaContext();
             ConfigureNebula();
         }

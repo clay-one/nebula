@@ -92,6 +92,11 @@ namespace Nebula.Job.Implementation
             return _runners.TryGetValue(jobId, out var runner) && !runner.IsProcessTerminated;
         }
 
+        public bool IsJobRunnerStarted(string jobId)
+        {
+            return _runners.TryGetValue(jobId, out var runner) && !runner.IsProcessRunning;
+        }
+
         private async Task<IJobRunner> GetOrCreateRunner(string jobId)
         {
             // Before loading data from store, check if the runner exists in memory

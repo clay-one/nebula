@@ -8,6 +8,9 @@ namespace Test.Mock
     [Component]
    public class MockJobNotification: IJobNotification
     {
+        [ComponentPlug]
+        public IJobNotificationTarget NotificationTarget { get; set; }
+
         public Task StartNotificationTargetThread()
         {
             throw new NotImplementedException();
@@ -20,7 +23,9 @@ namespace Test.Mock
 
         public Task NotifyJobUpdated(string jobId)
         {
-            throw new NotImplementedException();
+            NotificationTarget.ProcessNotification(jobId).GetAwaiter().GetResult();
+
+            return Task.CompletedTask;
         }
     }
 }
