@@ -9,8 +9,11 @@ namespace Nebula.Queue.Implementation
     [IgnoredOnAssemblyRegistration]
     public class NullJobQueue<TItem> : IJobQueue<TItem> where TItem : IJobStep
     {
+        public bool QueueExistenceChecked { get; set; }
+
         public Task EnsureJobQueueExists(string jobId = null)
         {
+            QueueExistenceChecked = true;
             return Task.CompletedTask;
         }
 
@@ -36,7 +39,7 @@ namespace Nebula.Queue.Implementation
 
         public Task<TItem> Dequeue(string jobId = null)
         {
-            return Task.FromResult<TItem>(default(TItem));
+            return Task.FromResult(default(TItem));
         }
 
         public Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)

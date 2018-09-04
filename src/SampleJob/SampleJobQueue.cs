@@ -7,8 +7,11 @@ namespace SampleJob
 {
     public class SampleJobQueue<TItem> : IJobQueue<SampleJobStep>
     {
+        public bool QueueExistenceChecked { get; set; }
+
         public Task EnsureJobQueueExists(string jobId = null)
         {
+            QueueExistenceChecked = true;
             return Task.CompletedTask;
         }
 
@@ -19,7 +22,7 @@ namespace SampleJob
 
         public Task PurgeQueueContents(string jobId = null)
         {
-           return Task.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public Task Enqueue(SampleJobStep item, string jobId = null)

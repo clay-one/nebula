@@ -39,7 +39,6 @@ namespace Nebula.Job.Implementation
         {
             if (string.IsNullOrWhiteSpace(jobId))
                 jobId = Base32Url.ToBase32String(Guid.NewGuid().ToByteArray());
-            configuration = configuration ?? new JobConfigurationData();
 
             ValidateAndFixConfiguration(configuration);
             
@@ -251,37 +250,51 @@ namespace Nebula.Job.Implementation
         }
 
         #region Private helper methods
-        
+
         private void ValidateAndFixConfiguration(JobConfigurationData configuration)
         {
-            configuration.MaxBatchSize = Math.Max(1, Math.Min(1000, configuration.MaxBatchSize));
-            configuration.MaxConcurrentBatchesPerWorker =
-                Math.Max(1, Math.Min(10000, configuration.MaxConcurrentBatchesPerWorker));
+            if (configuration == null)
+                throw new ArgumentException("Configuration cannot null");
 
-            if (configuration.ThrottledItemsPerSecond.HasValue && configuration.ThrottledItemsPerSecond <= 0d)
+            configuration.MaxBatchSize = Math.Max(JobConfigurationDefaultValue.MinBatchSize,
+                Math.Min(JobConfigurationDefaultValue.MaxBatchSize, configuration.MaxBatchSize));
+
+            configuration.MaxConcurrentBatchesPerWorker =
+                Math.Max(JobConfigurationDefaultValue.MinConcurrentBatchesPerWorker,
+                    Math.Min(JobConfigurationDefaultValue.MaxConcurrentBatchesPerWorker,
+                        configuration.MaxConcurrentBatchesPerWorker));
+
+            if (configuration.ThrottledItemsPerSecond.HasValue &&
+                configuration.ThrottledItemsPerSecond <= 0)
                 throw new ArgumentException("Throttle speed cannot be zero or negative");
             if (configuration.ThrottledItemsPerSecond.HasValue)
-                configuration.ThrottledItemsPerSecond = Math.Max(0.001d, configuration.ThrottledItemsPerSecond.Value);
+                configuration.ThrottledItemsPerSecond =
+                    Math.Max(JobConfigurationDefaultValue.MinThrottledItemsPerSecond,
+                        configuration.ThrottledItemsPerSecond.Value);
 
-            if (configuration.ThrottledMaxBurstSize.HasValue && configuration.ThrottledMaxBurstSize <= 0)
+            if (configuration.ThrottledMaxBurstSize.HasValue && configuration.ThrottledMaxBurstSize <=
+                JobConfigurationDefaultValue.MinThrottledMaxBurstSize)
                 throw new ArgumentException("Throttle burst size cannot be zero or negative");
-            if (configuration.ThrottledMaxBurstSize.HasValue)
-                configuration.ThrottledMaxBurstSize = Math.Max(1, configuration.ThrottledMaxBurstSize.Value);
-            
+
             if (configuration.ExpiresAt.HasValue && configuration.ExpiresAt < DateTime.Now)
                 throw new ArgumentException("Job is already expired and cannot be added");
 
-            if(configuration.QueueTypeName == null)
+            if (configuration.QueueTypeName == null)
                 throw new ArgumentException("QueueTypeName must be specified in job configuration");
 
             if (configuration.IdleSecondsToCompletion.HasValue)
-                configuration.IdleSecondsToCompletion = Math.Max(10, configuration.IdleSecondsToCompletion.Value);
+                configuration.IdleSecondsToCompletion =
+                    Math.Max(JobConfigurationDefaultValue.MinIdleSecondsToCompletion,
+                        configuration.IdleSecondsToCompletion.Value);
 
             if (configuration.MaxBlockedSecondsPerCycle.HasValue)
-                configuration.MaxBlockedSecondsPerCycle = Math.Max(30, configuration.MaxBlockedSecondsPerCycle.Value);
+                configuration.MaxBlockedSecondsPerCycle = Math.Max(
+                    JobConfigurationDefaultValue.MinMaxBlockedSecondsPerCycle,
+                    configuration.MaxBlockedSecondsPerCycle.Value);
 
             if (configuration.MaxTargetQueueLength.HasValue)
-                configuration.MaxTargetQueueLength = Math.Max(1, configuration.MaxTargetQueueLength.Value);
+                configuration.MaxTargetQueueLength = Math.Max(JobConfigurationDefaultValue.MinMaxTargetQueueLength,
+                    configuration.MaxTargetQueueLength.Value);
         }
 
         private IJobQueue GetJobQueue(JobData job)

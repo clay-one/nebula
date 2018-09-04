@@ -14,8 +14,8 @@ namespace Nebula.Queue.Implementation
     [IgnoredOnAssemblyRegistration]
     public class InMemoryJobQueue<TItem> : IJobQueue<TItem> where TItem : IJobStep
     {
-        private readonly Dictionary<string, Queue<TItem>> _queueContents;
         private readonly object _lockObject;
+        private readonly Dictionary<string, Queue<TItem>> _queueContents;
 
         public InMemoryJobQueue()
         {
@@ -23,8 +23,11 @@ namespace Nebula.Queue.Implementation
             _lockObject = new object();
         }
 
+        public bool QueueExistenceChecked { get; set; }
+
         public Task EnsureJobQueueExists(string jobId = null)
         {
+            QueueExistenceChecked = true;
             return Task.CompletedTask;
         }
 
@@ -32,7 +35,7 @@ namespace Nebula.Queue.Implementation
         {
             lock (_lockObject)
             {
-                return Task.FromResult((long)GetQueue(jobId).Count);
+                return Task.FromResult((long) GetQueue(jobId).Count);
             }
         }
 
@@ -89,9 +92,9 @@ namespace Nebula.Queue.Implementation
         [SuppressMessage("ReSharper", "InconsistentlySynchronizedField")]
         private Queue<TItem> GetQueue(string jobId)
         {
-            if (_queueContents.TryGetValue(jobId ?? "", out var queue)) 
+            if (_queueContents.TryGetValue(jobId ?? "", out var queue))
                 return queue;
-            
+
             queue = new Queue<TItem>();
             _queueContents[jobId ?? ""] = queue;
 

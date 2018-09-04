@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="SampleJobProcessor.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Connections.config" />
   </ItemGroup>
 

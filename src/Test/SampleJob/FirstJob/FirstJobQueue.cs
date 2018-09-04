@@ -1,22 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Nebula.Queue;
 
 namespace Test.SampleJob.FirstJob
 {
     public class FirstJobQueue<TItem> : IJobQueue<TItem> where TItem : IJobStep
     {
-        private Dictionary<string, TItem> _queue = new Dictionary<string, TItem>();
+        private readonly Dictionary<string, TItem> _queue = new Dictionary<string, TItem>();
+        public bool QueueExistenceChecked { get; set; }
+
         public Task EnsureJobQueueExists(string jobId = null)
         {
+            QueueExistenceChecked = true;
             return Task.CompletedTask;
         }
 
         public Task<long> GetQueueLength(string jobId = null)
         {
-            return Task.FromResult((long)_queue.Count);
+            return Task.FromResult((long) _queue.Count);
         }
 
         public Task PurgeQueueContents(string jobId = null)
