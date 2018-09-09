@@ -75,6 +75,8 @@ namespace Nebula.Job.Runner
 
         public bool IsProcessRunning => _started && !_terminated;
 
+        public bool IsProcessStopping => _stopping;
+
         public bool IsProcessTerminated => _terminated;
 
         public void Initialize(JobData jobData)
@@ -117,6 +119,8 @@ namespace Nebula.Job.Runner
                                          _lastStatus.State < JobState.Completed;
 
         private bool ShouldStartProcess => !_started && IsInRunningState;
+
+        private bool ShouldProcessStop => _lastStatus.State == JobState.Stopped;
 
         private bool IsProcessStalled
         {
@@ -198,6 +202,13 @@ namespace Nebula.Job.Runner
                     return false;
                 }
 
+                if (ShouldProcessStop)
+                {
+                    Log.Warn($"Job runner {_jobId} - Health check: we should stop processing");
+                    StopProcess();
+                    return true;
+                }
+
                 if (!IsInRunningState)
                 {
                     Log.Debug($"Job runner {_jobId} - Health check: everything looks okay");
@@ -230,6 +241,14 @@ namespace Nebula.Job.Runner
             }
 
             return true;
+        }
+
+     
+
+        private void StopProcess()
+        {
+            Log.Info($"Job runner {_jobId} - stop job runner");
+            _stopping = true;
         }
 
         public void StopRunner()

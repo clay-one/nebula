@@ -20,6 +20,7 @@ namespace Nebula.Job.Runner
         public string TenantId { get; private set; }
         public string JobId { get; private set; }
         public bool IsProcessRunning => false;
+        public bool IsProcessStopping => true;
         public bool IsProcessTerminated => true;
         
         public void Initialize(JobData jobData)

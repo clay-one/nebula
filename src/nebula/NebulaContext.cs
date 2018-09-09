@@ -43,7 +43,7 @@ namespace Nebula
                 x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IJobProcessor<>));
 
             if (!isTypeCorrect)
-                throw new ArgumentException("processor should implement IJobProcessor<>");
+                throw new ArgumentException("Processor should implement IJobProcessor<>");
 
             ComponentContext.Register(contract, new PreInitializedComponentFactory(processor));
         }
