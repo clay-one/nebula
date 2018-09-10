@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nebula;
 using Nebula.Job;
+using Nebula.Job.Runner;
 using Nebula.Multitenancy;
 using Nebula.Storage;
 using Test.Mock;
@@ -29,6 +30,9 @@ namespace Test
 
             Nebula.ComponentContext.Unregister(new ContractIdentity(typeof(IJobNotification)));
             Nebula.ComponentContext.Register(typeof(IJobNotification), typeof(MockJobNotification));
+
+            Nebula.ComponentContext.Unregister(new ContractIdentity(typeof(IBackgroundTaskScheduler)));
+            Nebula.ComponentContext.Register(typeof(IBackgroundTaskScheduler), typeof(MockBackgroundTaskScheduler));
         }
     }
 }
