@@ -58,6 +58,9 @@ namespace Nebula.Job.Runner
         [ComponentPlug]
         public NebulaContext NebulaContext { get; set; }
 
+        [ComponentPlug]
+        public IBackgroundTaskScheduler BackgroundTaskScheduler { get; set; }
+
         [CompositionConstructor]
         public JobRunner(IComposer composer, IJobProcessor<TJobStep> processor, IJobStore jobStore,
             IJobRunnerManager jobRunnerManager, JobStatisticsCalculator statistics, IJobNotification jobNotification)
@@ -284,7 +287,7 @@ namespace Nebula.Job.Runner
         private void StartProcess()
         {
             // Enqueue the work to be run in the background, so not awaiting
-            Task.Run(Process);
+            BackgroundTaskScheduler.Run(Process);
         }
 
         #endregion
