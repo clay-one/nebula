@@ -162,9 +162,10 @@ namespace Test.JobManagement
                 });
 
             var queue = Nebula.GetJobQueue<FirstJobStep>(QueueType.InMemory);
-            await queue.Enqueue(new FirstJobStep {Number = 1}, jobId);
-            
+
             await jobManager.StartJob(Tenant.Id, jobId);
+
+            await queue.Enqueue(new FirstJobStep {Number = 1}, jobId);
             var initialQueueLength = await queue.GetQueueLength(jobId);
 
             await jobManager.StopJob(Tenant.Id, jobId);
