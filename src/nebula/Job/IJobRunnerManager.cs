@@ -18,5 +18,7 @@ namespace Nebula.Job
         bool IsJobRunnerActive(string jobId);
 
         bool IsJobRunnerStarted(string jobId);
+
+        bool IsJobRunnerStoped(string jobId);
     }
 }

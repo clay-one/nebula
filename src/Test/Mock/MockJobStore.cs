@@ -95,10 +95,8 @@ namespace Test.Mock
                     : change.LastFailTime.Value;
 
             if (change.LastFailures != null && change.LastFailures.Length > 0)
-            {
                 foreach (var jobStatusErrorData in change.LastFailures)
                     job.Status.LastFailures.Append(jobStatusErrorData);
-            }
         }
 
         public Task AddException(string tenantId, string jobId, JobStatusErrorData jobStatusErrorData)
@@ -108,7 +106,17 @@ namespace Test.Mock
 
         public Task<bool> AddPredecessor(string tenantId, string jobId, string predecessorJobId)
         {
-            throw new NotImplementedException();
+            _jobs.TryGetValue(tenantId, out var value);
+            var job = value?[jobId];
+            if (job == null)
+                return Task.FromResult(false);
+
+            if (job.Configuration.PreprocessorJobIds == null)
+                job.Configuration.PreprocessorJobIds = new List<string>();
+
+            job.Configuration.PreprocessorJobIds.Add(predecessorJobId);
+
+            return Task.FromResult(true);
         }
     }
 }

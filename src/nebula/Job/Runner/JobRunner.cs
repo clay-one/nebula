@@ -58,6 +58,9 @@ namespace Nebula.Job.Runner
         [ComponentPlug]
         public NebulaContext NebulaContext { get; set; }
 
+        [ComponentPlug]
+        public IBackgroundTaskScheduler BackgroundTaskScheduler { get; set; }
+
         [CompositionConstructor]
         public JobRunner(IComposer composer, IJobProcessor<TJobStep> processor, IJobStore jobStore,
             IJobRunnerManager jobRunnerManager, JobStatisticsCalculator statistics, IJobNotification jobNotification)
@@ -74,6 +77,8 @@ namespace Nebula.Job.Runner
         public string JobId => _jobId;
 
         public bool IsProcessRunning => _started && !_terminated;
+
+        public bool IsProcessStopping => _stopping;
 
         public bool IsProcessTerminated => _terminated;
 
@@ -117,6 +122,8 @@ namespace Nebula.Job.Runner
                                          _lastStatus.State < JobState.Completed;
 
         private bool ShouldStartProcess => !_started && IsInRunningState;
+
+        private bool ShouldProcessStop => _lastStatus.State == JobState.Stopped;
 
         private bool IsProcessStalled
         {
@@ -198,6 +205,13 @@ namespace Nebula.Job.Runner
                     return false;
                 }
 
+                if (ShouldProcessStop)
+                {
+                    Log.Warn($"Job runner {_jobId} - Health check: we should stop processing");
+                    StopProcess();
+                    return true;
+                }
+
                 if (!IsInRunningState)
                 {
                     Log.Debug($"Job runner {_jobId} - Health check: everything looks okay");
@@ -230,6 +244,14 @@ namespace Nebula.Job.Runner
             }
 
             return true;
+        }
+
+     
+
+        private void StopProcess()
+        {
+            Log.Info($"Job runner {_jobId} - stop job runner");
+            _stopping = true;
         }
 
         public void StopRunner()
@@ -265,7 +287,7 @@ namespace Nebula.Job.Runner
         private void StartProcess()
         {
             // Enqueue the work to be run in the background, so not awaiting
-            Task.Run(Process);
+            BackgroundTaskScheduler.Run(Process);
         }
 
         #endregion

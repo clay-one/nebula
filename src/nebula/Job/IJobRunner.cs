@@ -9,6 +9,7 @@ namespace Nebula.Job
     {
         string JobId { get; }
         bool IsProcessRunning { get; }
+        bool IsProcessStopping { get; }
         bool IsProcessTerminated { get; }
         void Initialize(JobData jobData);
         Task<bool> CheckHealth();

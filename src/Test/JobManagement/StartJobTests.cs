@@ -70,7 +70,6 @@ namespace Test.JobManagement
 
             await jobManager.StartJob(Tenant.Id, jobId);
 
-            //await Task.Delay(10);
 
             var processedLength = await queue.GetQueueLength(jobId);
 
@@ -78,8 +77,6 @@ namespace Test.JobManagement
 
             Assert.IsTrue(jobRunnerManager.IsJobRunnerStarted(jobId));
             Assert.AreEqual(1, initialLength);
-
-            Assert.Inconclusive("todo: checxk if queue is empty");
             Assert.AreEqual(0, processedLength);
         }
     }
