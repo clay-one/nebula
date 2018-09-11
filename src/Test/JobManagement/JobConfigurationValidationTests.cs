@@ -29,14 +29,14 @@ namespace Test.JobManagement
             var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
-                    MaxBatchSize = JobConfigurationDefaultValue.MinBatchSize - 1,
+                    MaxBatchSize = JobConfigurationDefaultValues.MinBatchSize - 1,
                     QueueTypeName = QueueType.InMemory
                 });
 
             var jobStore = Nebula.ComponentContext.GetComponent(typeof(IJobStore)) as IJobStore;
             var job = await jobStore?.Load(Tenant.Id, jobId);
 
-            Assert.IsTrue(job.Configuration.MaxBatchSize >= JobConfigurationDefaultValue.MinBatchSize);
+            Assert.IsTrue(job.Configuration.MaxBatchSize >= JobConfigurationDefaultValues.MinBatchSize);
         }
 
         [TestMethod]
@@ -48,14 +48,14 @@ namespace Test.JobManagement
             var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
-                    MaxBatchSize = JobConfigurationDefaultValue.MaxBatchSize + 1,
+                    MaxBatchSize = JobConfigurationDefaultValues.MaxBatchSize + 1,
                     QueueTypeName = QueueType.InMemory
                 });
 
             var jobStore = Nebula.ComponentContext.GetComponent(typeof(IJobStore)) as IJobStore;
             var job = await jobStore?.Load(Tenant.Id, jobId);
 
-            Assert.IsTrue(job.Configuration.MaxBatchSize <= JobConfigurationDefaultValue.MaxBatchSize);
+            Assert.IsTrue(job.Configuration.MaxBatchSize <= JobConfigurationDefaultValues.MaxBatchSize);
         }
 
         [TestMethod]
@@ -67,7 +67,7 @@ namespace Test.JobManagement
             var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
-                    MaxConcurrentBatchesPerWorker = JobConfigurationDefaultValue.MinConcurrentBatchesPerWorker - 1,
+                    MaxConcurrentBatchesPerWorker = JobConfigurationDefaultValues.MinConcurrentBatchesPerWorker - 1,
                     QueueTypeName = QueueType.InMemory
                 });
 
@@ -75,7 +75,7 @@ namespace Test.JobManagement
             var job = await jobStore?.Load(Tenant.Id, jobId);
 
             Assert.IsTrue(job.Configuration.MaxConcurrentBatchesPerWorker >=
-                          JobConfigurationDefaultValue.MinConcurrentBatchesPerWorker);
+                          JobConfigurationDefaultValues.MinConcurrentBatchesPerWorker);
         }
 
         [TestMethod]
@@ -87,7 +87,7 @@ namespace Test.JobManagement
             var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
-                    MaxConcurrentBatchesPerWorker = JobConfigurationDefaultValue.MaxConcurrentBatchesPerWorker + 1,
+                    MaxConcurrentBatchesPerWorker = JobConfigurationDefaultValues.MaxConcurrentBatchesPerWorker + 1,
                     QueueTypeName = QueueType.InMemory
                 });
 
@@ -95,7 +95,7 @@ namespace Test.JobManagement
             var job = await jobStore?.Load(Tenant.Id, jobId);
 
             Assert.IsTrue(job.Configuration.MaxConcurrentBatchesPerWorker <=
-                          JobConfigurationDefaultValue.MaxConcurrentBatchesPerWorker);
+                          JobConfigurationDefaultValues.MaxConcurrentBatchesPerWorker);
         }
 
         [TestMethod]
@@ -107,7 +107,7 @@ namespace Test.JobManagement
             var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
-                    ThrottledItemsPerSecond = JobConfigurationDefaultValue.MinThrottledItemsPerSecond - 0.0001,
+                    ThrottledItemsPerSecond = JobConfigurationDefaultValues.MinThrottledItemsPerSecond - 0.0001,
                     QueueTypeName = QueueType.InMemory
                 });
 
@@ -115,7 +115,7 @@ namespace Test.JobManagement
             var job = await jobStore?.Load(Tenant.Id, jobId);
 
             Assert.IsTrue(job.Configuration.ThrottledItemsPerSecond >=
-                          JobConfigurationDefaultValue.MinThrottledItemsPerSecond);
+                          JobConfigurationDefaultValues.MinThrottledItemsPerSecond);
         }
 
         [TestMethod]
@@ -143,7 +143,7 @@ namespace Test.JobManagement
             await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
-                    ThrottledMaxBurstSize = JobConfigurationDefaultValue.MinThrottledMaxBurstSize,
+                    ThrottledMaxBurstSize = JobConfigurationDefaultValues.MinThrottledMaxBurstSize,
                     QueueTypeName = QueueType.InMemory
                 });
         }
@@ -172,7 +172,7 @@ namespace Test.JobManagement
             var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
-                    IdleSecondsToCompletion = JobConfigurationDefaultValue.MinIdleSecondsToCompletion - 1,
+                    IdleSecondsToCompletion = JobConfigurationDefaultValues.MinIdleSecondsToCompletion - 1,
                     QueueTypeName = QueueType.InMemory
                 });
 
@@ -180,7 +180,7 @@ namespace Test.JobManagement
             var job = await jobStore?.Load(Tenant.Id, jobId);
 
             Assert.IsTrue(job.Configuration.IdleSecondsToCompletion >=
-                          JobConfigurationDefaultValue.MinIdleSecondsToCompletion);
+                          JobConfigurationDefaultValues.MinIdleSecondsToCompletion);
         }
 
         [TestMethod]
@@ -192,7 +192,7 @@ namespace Test.JobManagement
             var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
-                    MaxBlockedSecondsPerCycle = JobConfigurationDefaultValue.MinMaxBlockedSecondsPerCycle - 1,
+                    MaxBlockedSecondsPerCycle = JobConfigurationDefaultValues.MinMaxBlockedSecondsPerCycle - 1,
                     QueueTypeName = QueueType.InMemory
                 });
 
@@ -200,7 +200,7 @@ namespace Test.JobManagement
             var job = await jobStore?.Load(Tenant.Id, jobId);
 
             Assert.IsTrue(job.Configuration.MaxBlockedSecondsPerCycle >=
-                          JobConfigurationDefaultValue.MinMaxBlockedSecondsPerCycle);
+                          JobConfigurationDefaultValues.MinMaxBlockedSecondsPerCycle);
         }
 
         [TestMethod]
@@ -212,7 +212,7 @@ namespace Test.JobManagement
             var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData
                 {
-                    MaxTargetQueueLength = JobConfigurationDefaultValue.MinMaxTargetQueueLength - 1,
+                    MaxTargetQueueLength = JobConfigurationDefaultValues.MinMaxTargetQueueLength - 1,
                     QueueTypeName = QueueType.InMemory
                 });
 
@@ -220,7 +220,7 @@ namespace Test.JobManagement
             var job = await jobStore?.Load(Tenant.Id, jobId);
 
             Assert.IsTrue(job.Configuration.MaxTargetQueueLength >=
-                          JobConfigurationDefaultValue.MinMaxTargetQueueLength);
+                          JobConfigurationDefaultValues.MinMaxTargetQueueLength);
         }
     }
 }

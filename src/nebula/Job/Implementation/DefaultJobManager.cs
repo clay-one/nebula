@@ -256,12 +256,12 @@ namespace Nebula.Job.Implementation
             if (configuration == null)
                 throw new ArgumentException("Configuration cannot null");
 
-            configuration.MaxBatchSize = Math.Max(JobConfigurationDefaultValue.MinBatchSize,
-                Math.Min(JobConfigurationDefaultValue.MaxBatchSize, configuration.MaxBatchSize));
+            configuration.MaxBatchSize = Math.Max(JobConfigurationDefaultValues.MinBatchSize,
+                Math.Min(JobConfigurationDefaultValues.MaxBatchSize, configuration.MaxBatchSize));
 
             configuration.MaxConcurrentBatchesPerWorker =
-                Math.Max(JobConfigurationDefaultValue.MinConcurrentBatchesPerWorker,
-                    Math.Min(JobConfigurationDefaultValue.MaxConcurrentBatchesPerWorker,
+                Math.Max(JobConfigurationDefaultValues.MinConcurrentBatchesPerWorker,
+                    Math.Min(JobConfigurationDefaultValues.MaxConcurrentBatchesPerWorker,
                         configuration.MaxConcurrentBatchesPerWorker));
 
             if (configuration.ThrottledItemsPerSecond.HasValue &&
@@ -269,11 +269,11 @@ namespace Nebula.Job.Implementation
                 throw new ArgumentException("Throttle speed cannot be zero or negative");
             if (configuration.ThrottledItemsPerSecond.HasValue)
                 configuration.ThrottledItemsPerSecond =
-                    Math.Max(JobConfigurationDefaultValue.MinThrottledItemsPerSecond,
+                    Math.Max(JobConfigurationDefaultValues.MinThrottledItemsPerSecond,
                         configuration.ThrottledItemsPerSecond.Value);
 
             if (configuration.ThrottledMaxBurstSize.HasValue && configuration.ThrottledMaxBurstSize <=
-                JobConfigurationDefaultValue.MinThrottledMaxBurstSize)
+                JobConfigurationDefaultValues.MinThrottledMaxBurstSize)
                 throw new ArgumentException("Throttle burst size cannot be zero or negative");
 
             if (configuration.ExpiresAt.HasValue && configuration.ExpiresAt < DateTime.Now)
@@ -284,16 +284,16 @@ namespace Nebula.Job.Implementation
 
             if (configuration.IdleSecondsToCompletion.HasValue)
                 configuration.IdleSecondsToCompletion =
-                    Math.Max(JobConfigurationDefaultValue.MinIdleSecondsToCompletion,
+                    Math.Max(JobConfigurationDefaultValues.MinIdleSecondsToCompletion,
                         configuration.IdleSecondsToCompletion.Value);
 
             if (configuration.MaxBlockedSecondsPerCycle.HasValue)
                 configuration.MaxBlockedSecondsPerCycle = Math.Max(
-                    JobConfigurationDefaultValue.MinMaxBlockedSecondsPerCycle,
+                    JobConfigurationDefaultValues.MinMaxBlockedSecondsPerCycle,
                     configuration.MaxBlockedSecondsPerCycle.Value);
 
             if (configuration.MaxTargetQueueLength.HasValue)
-                configuration.MaxTargetQueueLength = Math.Max(JobConfigurationDefaultValue.MinMaxTargetQueueLength,
+                configuration.MaxTargetQueueLength = Math.Max(JobConfigurationDefaultValues.MinMaxTargetQueueLength,
                     configuration.MaxTargetQueueLength.Value);
         }
 
