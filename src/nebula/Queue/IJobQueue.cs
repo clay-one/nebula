@@ -6,8 +6,6 @@ namespace Nebula.Queue
 {
     public interface IJobQueue
     {
-        bool QueueExistenceChecked { get; set; }
-
         Task EnsureJobQueueExists(string jobId = null);
         Task<long> GetQueueLength(string jobId = null);
         Task PurgeQueueContents(string jobId = null);

@@ -12,12 +12,9 @@ namespace Nebula.Queue.Implementation
     {
         [ComponentPlug]
         public IJobProcessor<TItem> Processor { get; set; }
-
-        public bool QueueExistenceChecked { get; set; }
-
+        
         public Task EnsureJobQueueExists(string jobId = null)
         {
-            QueueExistenceChecked = true;
             return Task.CompletedTask;
         }
 

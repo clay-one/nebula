@@ -22,12 +22,9 @@ namespace Nebula.Queue.Implementation
             _queueContents = new Dictionary<string, Queue<TItem>>();
             _lockObject = new object();
         }
-
-        public bool QueueExistenceChecked { get; set; }
-
+        
         public Task EnsureJobQueueExists(string jobId = null)
         {
-            QueueExistenceChecked = true;
             return Task.CompletedTask;
         }
 

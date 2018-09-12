@@ -14,12 +14,9 @@ namespace Nebula.Queue.Implementation
     {
         [ComponentPlug]
         public IRedisManager RedisManager { get; set; }
-
-        public bool QueueExistenceChecked { get; set; }
-
+        
         public Task EnsureJobQueueExists(string jobId = null)
         {
-            QueueExistenceChecked = true;
             // Redis lists are created upon adding first item, so nothing to do here.
             return Task.CompletedTask;
         }

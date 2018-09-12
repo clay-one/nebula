@@ -5,6 +5,7 @@ using Nebula.Queue;
 using Nebula.Queue.Implementation;
 using Nebula.Storage;
 using Nebula.Storage.Model;
+using Test.SampleJob;
 using Test.SampleJob.FirstJob;
 
 namespace Test.JobManagement
@@ -49,13 +50,13 @@ namespace Test.JobManagement
         [TestMethod]
         public async Task CreateJob_NewJob_QueueExistenceCheck()
         {
-            Nebula.RegisterJobQueue(typeof(InMemoryJobQueue<FirstJobStep>), QueueType.InMemory);
+            Nebula.RegisterJobQueue(typeof(FirstJobQueue<FirstJobStep>), QueueTypes.FirstJobQueue);
 
             var jobManager = Nebula.GetJobManager();
             await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
-                configuration: new JobConfigurationData {QueueTypeName = QueueType.InMemory});
+                configuration: new JobConfigurationData {QueueTypeName = QueueTypes.FirstJobQueue });
 
-            var queue = Nebula.GetJobQueue<FirstJobStep>(QueueType.InMemory);
+            var queue = Nebula.GetJobQueue<FirstJobStep>(QueueTypes.FirstJobQueue) as FirstJobQueue<FirstJobStep>;
 
             Assert.IsNotNull(queue);
             Assert.IsTrue(queue.QueueExistenceChecked);
