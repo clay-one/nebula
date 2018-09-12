@@ -279,8 +279,8 @@ namespace Nebula.Job.Runner
             {
                 await _jobNotification.NotifyJobUpdated(_jobId);
 
-                var finalizableProcessor = _processor as IFinalizableJobProcessor<TJobStep>;
-                finalizableProcessor?.JobCompleted();
+                if (_processor is IFinalizableJobProcessor<TJobStep> finalizableProcessor)
+                    await finalizableProcessor.JobCompleted();
             }
         }
 

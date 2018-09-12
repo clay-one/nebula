@@ -27,8 +27,9 @@ namespace SampleWorker
             return Task.FromResult(0L);
         }
 
-        public void JobCompleted()
+        public async Task JobCompleted()
         {
+            
         }
     }
 }
