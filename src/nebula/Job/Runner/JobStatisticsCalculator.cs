@@ -196,7 +196,7 @@ namespace Nebula.Job.Runner
             Interlocked.Exchange(ref _lastFlushTicks, DateTime.UtcNow.Ticks);
             
             var lastFailTicks = LastFailTicks;
-            var lastFailTime = lastFailTicks == 0 ? (DateTime?)null : new DateTime(lastFailTicks);
+            var lastFailTime = lastFailTicks == 0 ? (DateTime?)null : new DateTime(lastFailTicks, DateTimeKind.Utc);
 
             var change = new JobStatusUpdateData
             {
