@@ -7,6 +7,7 @@ using ComposerCore.Implementation;
 using hydrogen.General.Collections;
 using hydrogen.General.Text;
 using hydrogen.General.Validation;
+using log4net;
 using Nebula.Queue;
 using Nebula.Storage;
 using Nebula.Storage.Model;
@@ -27,6 +28,9 @@ namespace Nebula.Job.Implementation
 
         [ComponentPlug]
         public IComponentContext ComponentContext { get; set; }
+
+        private  readonly ILog Log =
+            LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public Task CleanupOldJobs()
         {
@@ -76,11 +80,11 @@ namespace Nebula.Job.Implementation
 
             await JobStore.AddOrUpdateDefinition(job);
             
-            var queue = Composer.GetComponent<IJobQueue<TJobStep>>(job.Configuration.QueueTypeName);
-            if (queue == null)
+            var jobStepSource = Composer.GetComponent<IJobStepSource<TJobStep>>(job.Configuration.QueueTypeName);
+            if (jobStepSource == null)
                 throw new CompositionException("JobQueue should be registered");
 
-            await queue.EnsureJobQueueExists(jobId);
+            await jobStepSource.EnsureJobSourcExists(jobId);
             
             return jobId;
         }
@@ -149,9 +153,9 @@ namespace Nebula.Job.Implementation
                 {
                     await JobNotification.NotifyJobUpdated(jobId);
                     
-                    var jobQueue = GetJobQueue(jobData);
-                    if (jobQueue != null)
-                        await jobQueue.PurgeQueueContents(jobId);
+                    var jobStepSource = GetJobQueue(jobData);
+                    if (jobStepSource != null)
+                        await jobStepSource.PurgeContents(jobId);
                     
                     return ApiValidationResult.Ok();
                 }
@@ -235,18 +239,18 @@ namespace Nebula.Job.Implementation
             if (jobData == null)
                 return ApiValidationResult.Failure(ErrorKeys.InvalidJobId);
             
-            var jobQueue = GetJobQueue(jobData);
-            if (jobQueue == null)
+            var jobStepSource = GetJobQueue(jobData);
+            if (jobStepSource == null)
                 return ApiValidationResult.Failure(ErrorKeys.UnknownInternalServerError);
 
-            await jobQueue.PurgeQueueContents(jobId);
+            await jobStepSource.PurgeContents(jobId);
             return ApiValidationResult.Ok();
         }
 
         public async Task<long> GetQueueLength(string tenantId, string jobId)
         {
-            var jobQueue = GetJobQueue((await JobStore.Load(tenantId, jobId)));
-            return jobQueue == null ? 0 : await jobQueue.GetQueueLength(jobId);
+            var jobStepSource = GetJobQueue(await JobStore.Load(tenantId, jobId));
+            return !(jobStepSource is IJobQueue jobQueue) ? 0 : await jobQueue.GetQueueLength(jobId);
         }
 
         #region Private helper methods
@@ -297,7 +301,7 @@ namespace Nebula.Job.Implementation
                     configuration.MaxTargetQueueLength.Value);
         }
 
-        private IJobQueue GetJobQueue(JobData job)
+        private IJobStepSource GetJobQueue(JobData job)
         {
             if (string.IsNullOrWhiteSpace(job.JobStepType))
                 return null;
@@ -305,6 +309,7 @@ namespace Nebula.Job.Implementation
             var stepType = Type.GetType(job.JobStepType);
             if (stepType == null)
             {
+                Log.Error("JobStepType ");
                 // TODO: Log error
                 return null;
             }
@@ -315,14 +320,14 @@ namespace Nebula.Job.Implementation
                 return null;
             }
             
-            var contract = typeof(IJobQueue<>).MakeGenericType(stepType);
-            if (!(Composer.GetComponent(contract,job.Configuration.QueueTypeName) is IJobQueue jobQueue))
+            var contract = typeof(IJobStepSource<>).MakeGenericType(stepType);
+            if (!(Composer.GetComponent(contract,job.Configuration.QueueTypeName) is IJobStepSource jobStepSource))
             {
                 // TODO: Log error
                 return null;
             }
 
-            return jobQueue;
+            return jobStepSource;
         }
 
         #endregion

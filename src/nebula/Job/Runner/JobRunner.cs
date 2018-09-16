@@ -154,9 +154,9 @@ namespace Nebula.Job.Runner
             if (_jobData.Configuration.IsIndefinite)
                 return false;
 
-            var queue = _composer.GetComponent<IJobQueue<TJobStep>>(_jobData.Configuration.QueueTypeName);
+            var jobStepSource = _composer.GetComponent<IJobStepSource<TJobStep>>(_jobData.Configuration.QueueTypeName);
 
-            if (await queue.GetQueueLength(_jobId) > 0)
+            if (await jobStepSource.IsThereAnyMoreSteps(_jobId))
                 return false;
 
             // JobRunnerManager always runs preprocessor tasks before running a task. So, it will siffice
@@ -417,9 +417,9 @@ namespace Nebula.Job.Runner
 
                 var nextBatchSize = Math.Min(throttledBatchSize, _jobData.Configuration.MaxBatchSize);
 
-                var queue = _composer.GetComponent<IJobQueue<TJobStep>>(_jobData.Configuration.QueueTypeName);
+                var queue = _composer.GetComponent<IJobStepSource<TJobStep>>(_jobData.Configuration.QueueTypeName);
 
-                steps = (await queue.DequeueBatch(nextBatchSize, _jobId)).SafeToList();
+                steps = (await queue.GetNextStepBatch(nextBatchSize, _jobId)).SafeToList();
                 if (steps == null || steps.Count <= 0)
                 {
                     Log.Debug($"Job runner {_jobId} - There's no more work to do");
