@@ -14,21 +14,10 @@ namespace Nebula.Queue.Implementation
     {
         [ComponentPlug]
         public IRedisManager RedisManager { get; set; }
-        
-        public Task EnsureJobQueueExists(string jobId = null)
-        {
-            // Redis lists are created upon adding first item, so nothing to do here.
-            return Task.CompletedTask;
-        }
 
         public async Task<long> GetQueueLength(string jobId = null)
         {
             return await RedisManager.GetDatabase().ListLengthAsync(GetRedisKey(jobId));
-        }
-
-        public async Task PurgeQueueContents(string jobId = null)
-        {
-            await RedisManager.GetDatabase().KeyDeleteAsync(GetRedisKey(jobId));
         }
 
         public async Task Enqueue(TItem item, string jobId = null)
@@ -44,13 +33,30 @@ namespace Nebula.Queue.Implementation
             await Task.WhenAll(tasks);
         }
 
-        public async Task<TItem> Dequeue(string jobId = null)
+        public Task EnsureJobSourceExists(string jobId = null)
+        {
+            // Redis lists are created upon adding first item, so nothing to do here.
+            return Task.CompletedTask;
+        }
+
+        public async Task<bool> Any(string jobId = null)
+        {
+            var queueLength = await RedisManager.GetDatabase().ListLengthAsync(GetRedisKey(jobId));
+            return await Task.FromResult(queueLength > 0);
+        }
+
+        public async Task Purge(string jobId = null)
+        {
+            await RedisManager.GetDatabase().KeyDeleteAsync(GetRedisKey(jobId));
+        }
+
+        public async Task<TItem> GetNext(string jobId = null)
         {
             string serialized = await RedisManager.GetDatabase().ListRightPopAsync(GetRedisKey(jobId));
             return serialized.FromJson<TItem>();
         }
 
-        public async Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)
+        public async Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize, string jobId = null)
         {
             if (maxBatchSize < 1 || maxBatchSize > 10000)
                 throw new ArgumentException("MaxBatchSize is out of range");
@@ -73,6 +79,30 @@ namespace Nebula.Queue.Implementation
         private string GetRedisKey(string jobId)
         {
             return "job_" + (string.IsNullOrEmpty(jobId) ? typeof(TItem).Name : jobId);
+        }
+
+        #endregion
+
+        #region Obsolete members
+
+        public Task EnsureJobQueueExists(string jobId = null)
+        {
+            return EnsureJobSourceExists(jobId);
+        }
+
+        public Task PurgeQueueContents(string jobId = null)
+        {
+            return Purge(jobId);
+        }
+
+        public Task<TItem> Dequeue(string jobId = null)
+        {
+            return GetNext(jobId);
+        }
+
+        public Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)
+        {
+            return GetNextBatch(maxBatchSize, jobId);
         }
 
         #endregion

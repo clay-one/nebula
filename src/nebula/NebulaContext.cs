@@ -50,12 +50,12 @@ namespace Nebula
 
         public void RegisterJobQueue(Type jobQueue, string queueTypeName)
         {
-            ComponentContext.Register(typeof(IJobQueue<>), queueTypeName, jobQueue);
+            ComponentContext.Register(typeof(IJobStepSource<>), queueTypeName, jobQueue);
         }
 
         public IJobQueue<TJobStep> GetJobQueue<TJobStep>(string queueTypeName) where TJobStep : IJobStep
         {
-            return ComponentContext.GetComponent(typeof(IJobQueue<TJobStep>), queueTypeName) as IJobQueue<TJobStep>;
+            return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>), queueTypeName) as IJobQueue<TJobStep>;
         }
 
         public IJobManager GetJobManager()
