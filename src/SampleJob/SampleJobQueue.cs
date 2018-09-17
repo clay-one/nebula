@@ -40,12 +40,12 @@ namespace SampleJob
             return Task.CompletedTask;
         }
 
-        public Task<SampleJobStep> GetNextStep(string jobId = null)
+        public Task<SampleJobStep> GetNext(string jobId = null)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<SampleJobStep>> GetNextStepsBatch(int maxBatchSize, string jobId = null)
+        public Task<IEnumerable<SampleJobStep>> GetNextBatch(int maxBatchSize, string jobId = null)
         {
             throw new NotImplementedException();
         }
@@ -64,12 +64,12 @@ namespace SampleJob
 
         public Task<SampleJobStep> Dequeue(string jobId = null)
         {
-            return GetNextStep(jobId);
+            return GetNext(jobId);
         }
 
         public Task<IEnumerable<SampleJobStep>> DequeueBatch(int maxBatchSize, string jobId = null)
         {
-            return GetNextStepsBatch(maxBatchSize, jobId);
+            return GetNextBatch(maxBatchSize, jobId);
         }
 
         #endregion

@@ -419,7 +419,7 @@ namespace Nebula.Job.Runner
 
                 var queue = _composer.GetComponent<IJobStepSource<TJobStep>>(_jobData.Configuration.QueueTypeName);
 
-                steps = (await queue.GetNextStepsBatch(nextBatchSize, _jobId)).SafeToList();
+                steps = (await queue.GetNextBatch(nextBatchSize, _jobId)).SafeToList();
                 if (steps == null || steps.Count <= 0)
                 {
                     Log.Debug($"Job runner {_jobId} - There's no more work to do");

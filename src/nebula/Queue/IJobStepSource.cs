@@ -14,7 +14,7 @@ namespace Nebula.Queue
     [Contract]
     public interface IJobStepSource<TItem> : IJobStepSource where TItem : IJobStep
     {
-        Task<TItem> GetNextStep(string jobId = null);
-        Task<IEnumerable<TItem>> GetNextStepsBatch(int maxBatchSize, string jobId = null);
+        Task<TItem> GetNext(string jobId = null);
+        Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize, string jobId = null);
     }
 }

@@ -74,7 +74,7 @@ namespace Nebula.Queue.Implementation
             }
         }
 
-        public Task<TItem> GetNextStep(string jobId = null)
+        public Task<TItem> GetNext(string jobId = null)
         {
             lock (_lockObject)
             {
@@ -83,7 +83,7 @@ namespace Nebula.Queue.Implementation
             }
         }
 
-        public Task<IEnumerable<TItem>> GetNextStepsBatch(int maxBatchSize, string jobId = null)
+        public Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize, string jobId = null)
         {
             lock (_lockObject)
             {
@@ -121,12 +121,12 @@ namespace Nebula.Queue.Implementation
 
         public Task<TItem> Dequeue(string jobId = null)
         {
-            return GetNextStep(jobId);
+            return GetNext(jobId);
         }
 
         public Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)
         {
-            return GetNextStepsBatch(maxBatchSize, jobId);
+            return GetNextBatch(maxBatchSize, jobId);
         }
 
         #endregion

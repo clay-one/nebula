@@ -22,10 +22,10 @@ namespace Nebula.Queue
         Task Enqueue(TItem item, string jobId = null);
         Task EnqueueBatch(IEnumerable<TItem> items, string jobId = null);
 
-        [Obsolete("Use GetNextStep Instead")]
+        [Obsolete("Use GetNext Instead")]
         Task<TItem> Dequeue(string jobId = null);
 
-        [Obsolete("Use GetNextStepsBatch Instead")]
+        [Obsolete("Use GetNextBatch Instead")]
         Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null);
     }
 }

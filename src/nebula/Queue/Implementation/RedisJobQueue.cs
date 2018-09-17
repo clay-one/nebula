@@ -50,13 +50,13 @@ namespace Nebula.Queue.Implementation
             await RedisManager.GetDatabase().KeyDeleteAsync(GetRedisKey(jobId));
         }
 
-        public async Task<TItem> GetNextStep(string jobId = null)
+        public async Task<TItem> GetNext(string jobId = null)
         {
             string serialized = await RedisManager.GetDatabase().ListRightPopAsync(GetRedisKey(jobId));
             return serialized.FromJson<TItem>();
         }
 
-        public async Task<IEnumerable<TItem>> GetNextStepsBatch(int maxBatchSize, string jobId = null)
+        public async Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize, string jobId = null)
         {
             if (maxBatchSize < 1 || maxBatchSize > 10000)
                 throw new ArgumentException("MaxBatchSize is out of range");
@@ -97,12 +97,12 @@ namespace Nebula.Queue.Implementation
 
         public Task<TItem> Dequeue(string jobId = null)
         {
-            return GetNextStep(jobId);
+            return GetNext(jobId);
         }
 
         public Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)
         {
-            return GetNextStepsBatch(maxBatchSize, jobId);
+            return GetNextBatch(maxBatchSize, jobId);
         }
 
         #endregion
