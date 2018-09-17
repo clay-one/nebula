@@ -51,12 +51,12 @@ namespace Nebula.Queue.Implementation
             return Task.CompletedTask;
         }
 
-        public Task EnsureJobSourcExists(string jobId = null)
+        public Task EnsureJobSourceExists(string jobId = null)
         {
             return Task.CompletedTask;
         }
 
-        public Task<bool> IsThereAnyMoreSteps(string jobId = null)
+        public Task<bool> Any(string jobId = null)
         {
             lock (_lockObject)
             {
@@ -65,7 +65,7 @@ namespace Nebula.Queue.Implementation
             }
         }
 
-        public Task PurgeContents(string jobId = null)
+        public Task Purge(string jobId = null)
         {
             lock (_lockObject)
             {
@@ -83,7 +83,7 @@ namespace Nebula.Queue.Implementation
             }
         }
 
-        public Task<IEnumerable<TItem>> GetNextStepBatch(int maxBatchSize, string jobId = null)
+        public Task<IEnumerable<TItem>> GetNextStepsBatch(int maxBatchSize, string jobId = null)
         {
             lock (_lockObject)
             {
@@ -111,12 +111,12 @@ namespace Nebula.Queue.Implementation
 
         public Task EnsureJobQueueExists(string jobId = null)
         {
-            return EnsureJobSourcExists(jobId);
+            return EnsureJobSourceExists(jobId);
         }
 
         public Task PurgeQueueContents(string jobId = null)
         {
-            return PurgeContents(jobId);
+            return Purge(jobId);
         }
 
         public Task<TItem> Dequeue(string jobId = null)
@@ -126,7 +126,7 @@ namespace Nebula.Queue.Implementation
 
         public Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)
         {
-            return GetNextStepBatch(maxBatchSize, jobId);
+            return GetNextStepsBatch(maxBatchSize, jobId);
         }
 
         #endregion

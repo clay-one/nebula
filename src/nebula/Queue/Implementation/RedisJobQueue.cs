@@ -33,19 +33,19 @@ namespace Nebula.Queue.Implementation
             await Task.WhenAll(tasks);
         }
 
-        public Task EnsureJobSourcExists(string jobId = null)
+        public Task EnsureJobSourceExists(string jobId = null)
         {
             // Redis lists are created upon adding first item, so nothing to do here.
             return Task.CompletedTask;
         }
 
-        public async Task<bool> IsThereAnyMoreSteps(string jobId = null)
+        public async Task<bool> Any(string jobId = null)
         {
             var queueLength = await RedisManager.GetDatabase().ListLengthAsync(GetRedisKey(jobId));
             return await Task.FromResult(queueLength > 0);
         }
 
-        public async Task PurgeContents(string jobId = null)
+        public async Task Purge(string jobId = null)
         {
             await RedisManager.GetDatabase().KeyDeleteAsync(GetRedisKey(jobId));
         }
@@ -56,7 +56,7 @@ namespace Nebula.Queue.Implementation
             return serialized.FromJson<TItem>();
         }
 
-        public async Task<IEnumerable<TItem>> GetNextStepBatch(int maxBatchSize, string jobId = null)
+        public async Task<IEnumerable<TItem>> GetNextStepsBatch(int maxBatchSize, string jobId = null)
         {
             if (maxBatchSize < 1 || maxBatchSize > 10000)
                 throw new ArgumentException("MaxBatchSize is out of range");
@@ -87,12 +87,12 @@ namespace Nebula.Queue.Implementation
 
         public Task EnsureJobQueueExists(string jobId = null)
         {
-            return EnsureJobSourcExists(jobId);
+            return EnsureJobSourceExists(jobId);
         }
 
         public Task PurgeQueueContents(string jobId = null)
         {
-            return PurgeContents(jobId);
+            return Purge(jobId);
         }
 
         public Task<TItem> Dequeue(string jobId = null)
@@ -102,7 +102,7 @@ namespace Nebula.Queue.Implementation
 
         public Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)
         {
-            return GetNextStepBatch(maxBatchSize, jobId);
+            return GetNextStepsBatch(maxBatchSize, jobId);
         }
 
         #endregion

@@ -9,10 +9,10 @@ namespace Nebula.Queue
     {
         Task<long> GetQueueLength(string jobId = null);
 
-        [Obsolete("Use EnsureJobSourcExists instead")]
+        [Obsolete("Use EnsureJobSourceExists instead")]
         Task EnsureJobQueueExists(string jobId = null);
 
-        [Obsolete("Use PurgeContents instead")]
+        [Obsolete("Use Purge instead")]
         Task PurgeQueueContents(string jobId = null);
     }
 
@@ -25,7 +25,7 @@ namespace Nebula.Queue
         [Obsolete("Use GetNextStep Instead")]
         Task<TItem> Dequeue(string jobId = null);
 
-        [Obsolete("Use GetNextStepBatch Instead")]
+        [Obsolete("Use GetNextStepsBatch Instead")]
         Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null);
     }
 }

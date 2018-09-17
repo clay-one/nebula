@@ -84,7 +84,7 @@ namespace Nebula.Job.Implementation
             if (jobStepSource == null)
                 throw new CompositionException("JobQueue should be registered");
 
-            await jobStepSource.EnsureJobSourcExists(jobId);
+            await jobStepSource.EnsureJobSourceExists(jobId);
             
             return jobId;
         }
@@ -155,7 +155,7 @@ namespace Nebula.Job.Implementation
                     
                     var jobStepSource = GetJobQueue(jobData);
                     if (jobStepSource != null)
-                        await jobStepSource.PurgeContents(jobId);
+                        await jobStepSource.Purge(jobId);
                     
                     return ApiValidationResult.Ok();
                 }
@@ -243,7 +243,7 @@ namespace Nebula.Job.Implementation
             if (jobStepSource == null)
                 return ApiValidationResult.Failure(ErrorKeys.UnknownInternalServerError);
 
-            await jobStepSource.PurgeContents(jobId);
+            await jobStepSource.Purge(jobId);
             return ApiValidationResult.Ok();
         }
 
