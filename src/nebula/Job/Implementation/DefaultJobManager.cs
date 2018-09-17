@@ -309,21 +309,20 @@ namespace Nebula.Job.Implementation
             var stepType = Type.GetType(job.JobStepType);
             if (stepType == null)
             {
-                Log.Error("JobStepType ");
-                // TODO: Log error
+                Log.Error($"JobStepType {job.JobStepType} is not defined.");
                 return null;
             }
 
             if (!(typeof(IJobStep)).IsAssignableFrom(stepType))
             {
-                // TODO: Log error
+                Log.Error($"JobStepType {job.JobStepType}  is not IJobStep.");
                 return null;
             }
             
             var contract = typeof(IJobStepSource<>).MakeGenericType(stepType);
             if (!(Composer.GetComponent(contract,job.Configuration.QueueTypeName) is IJobStepSource jobStepSource))
             {
-                // TODO: Log error
+                Log.Error($"JobStepSource {job.JobStepType} is not defined.");
                 return null;
             }
 
