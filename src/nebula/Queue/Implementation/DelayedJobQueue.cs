@@ -61,17 +61,17 @@ namespace Nebula.Queue.Implementation
             await RedisManager.GetDatabase().SortedSetAddAsync(GetRedisKey(jobId), item.ToJson(), ticks);
         }
 
-        public async Task EnqueueBatch(IEnumerable<KeyValuePair<TItem, long>> items, string jobId = null)
+        public async Task EnqueueBatch(IEnumerable<Tuple<TItem, long>> items, string jobId = null)
         {
             var redisKey = GetRedisKey(jobId);
             var redisDb = RedisManager.GetDatabase();
-            var tasks = items.Select(item => redisDb.SortedSetAddAsync(redisKey, item.Key.ToJson(), item.Value));
+            var tasks = items.Select(item => redisDb.SortedSetAddAsync(redisKey, item.Item1.ToJson(), item.Item2));
             await Task.WhenAll(tasks);
         }
 
         public async Task EnqueueBatch(IEnumerable<TItem> items, long ticks, string jobId = null)
         {
-            var steps = items.Select(item => new KeyValuePair<TItem, long>(item, ticks)).ToList();
+            var steps = items.Select(item => new Tuple<TItem, long>(item, ticks)).ToList();
 
             await EnqueueBatch(steps, jobId);
         }

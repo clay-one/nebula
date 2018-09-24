@@ -133,13 +133,13 @@ namespace Test.JobQueue
             var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
 
             var time = DateTime.UtcNow;
-            var items = new List<KeyValuePair<FirstJobStep, long>>
+            var items = new List<Tuple<FirstJobStep, long>>
             {
-                new KeyValuePair<FirstJobStep, long>(new FirstJobStep {Number = 1}, time.AddDays(1).Ticks),
-                new KeyValuePair<FirstJobStep, long>(new FirstJobStep {Number = 2}, time.AddDays(1).Ticks),
-                new KeyValuePair<FirstJobStep, long>(new FirstJobStep {Number = 3}, time.AddDays(2).Ticks),
-                new KeyValuePair<FirstJobStep, long>(new FirstJobStep {Number = 4}, time.AddHours(-1).Ticks),
-                new KeyValuePair<FirstJobStep, long>(new FirstJobStep {Number = 5}, time.AddHours(1).Ticks)
+                new Tuple<FirstJobStep, long>(new FirstJobStep {Number = 1}, time.AddDays(1).Ticks),
+                new Tuple<FirstJobStep, long>(new FirstJobStep {Number = 2}, time.AddDays(1).Ticks),
+                new Tuple<FirstJobStep, long>(new FirstJobStep {Number = 3}, time.AddDays(2).Ticks),
+                new Tuple<FirstJobStep, long>(new FirstJobStep {Number = 4}, time.AddHours(-1).Ticks),
+                new Tuple<FirstJobStep, long>(new FirstJobStep {Number = 5}, time.AddHours(1).Ticks)
             };
 
             await queue.EnqueueBatch(items, _jobId);
