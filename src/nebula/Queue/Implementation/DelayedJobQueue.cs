@@ -69,6 +69,13 @@ namespace Nebula.Queue.Implementation
             await Task.WhenAll(tasks);
         }
 
+        public async Task EnqueueBatch(IEnumerable<TItem> items, long ticks, string jobId = null)
+        {
+            var steps = items.Select(item => new KeyValuePair<TItem, long>(item, ticks)).ToList();
+
+            await EnqueueBatch(steps, jobId);
+        }
+
         private string GetRedisKey(string jobId)
         {
             return "job_" + (string.IsNullOrEmpty(jobId) ? typeof(TItem).Name : jobId);

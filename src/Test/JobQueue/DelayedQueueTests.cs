@@ -66,14 +66,14 @@ namespace Test.JobQueue
 
             var enQueuedItem = new FirstJobStep {Number = 1};
             await queue.Enqueue(enQueuedItem, DateTime.UtcNow.Ticks, _jobId);
-            var deQueuedItem = await queue.GetNext(_jobId);
+            var dequeuedItem = await queue.GetNext(_jobId);
 
-            Assert.IsNotNull(deQueuedItem);
-            Assert.AreEqual(enQueuedItem.Number, deQueuedItem.Number);
+            Assert.IsNotNull(dequeuedItem);
+            Assert.AreEqual(enQueuedItem.Number, dequeuedItem.Number);
         }
 
         [TestMethod]
-        public async Task DelayedQueue_GetNext_Add2ItemAndConsume_dequeuedItemsShouldNotBeTheSame()
+        public async Task DelayedQueue_GetNext_Add2ItemAndConsume_DequeuedItemsShouldNotBeTheSame()
         {
             var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
 
@@ -110,16 +110,16 @@ namespace Test.JobQueue
             var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
 
             var time = DateTime.UtcNow.Ticks;
-            var items = new List<KeyValuePair<FirstJobStep, long>>
+            var items = new List<FirstJobStep>
             {
-                new KeyValuePair<FirstJobStep, long>(new FirstJobStep {Number = 1}, time),
-                new KeyValuePair<FirstJobStep, long>(new FirstJobStep {Number = 2}, time),
-                new KeyValuePair<FirstJobStep, long>(new FirstJobStep {Number = 3}, time),
-                new KeyValuePair<FirstJobStep, long>(new FirstJobStep {Number = 4}, time),
-                new KeyValuePair<FirstJobStep, long>(new FirstJobStep {Number = 5}, time)
+                new FirstJobStep {Number = 1},
+                new FirstJobStep {Number = 2},
+                new FirstJobStep {Number = 3},
+                new FirstJobStep {Number = 4},
+                new FirstJobStep {Number = 5}
             };
 
-            await queue.EnqueueBatch(items, _jobId);
+            await queue.EnqueueBatch(items, time, _jobId);
 
             var result = await queue.GetNextBatch(5, _jobId);
 

@@ -9,5 +9,6 @@ namespace Nebula.Queue
     {
         Task Enqueue(TItem item, long ticks, string jobId = null);
         Task EnqueueBatch(IEnumerable<KeyValuePair<TItem, long>> items, string jobId = null);
+        Task EnqueueBatch(IEnumerable<TItem> items, long ticks, string jobId = null);
     }
 }
