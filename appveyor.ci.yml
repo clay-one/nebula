@@ -11,9 +11,6 @@ dotnet_csproj:
   informational_version: '{version}'
 before_build:
 - cmd: nuget restore src\nebula.sln
-- nuget install redis-64 -excludeversion
-- redis-64\redis-server.exe --service-install
-- redis-64\redis-server.exe --service-start
 build:
   publish_nuget: true
   publish_nuget_symbols: true
