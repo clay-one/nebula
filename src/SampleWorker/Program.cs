@@ -13,7 +13,8 @@ namespace SampleWorker
             Console.WriteLine("Abaci.JobQueue.Worker worker service...");
 
             var nebulaContext = new NebulaContext();
-            nebulaContext.RegisterJobQueue(typeof(RedisJobQueue<>), QueueType.Redis);
+            nebulaContext.RegisterJobQueue(typeof(DelayedJobQueue<>), QueueType.Delayed);
+
 
             // register processor by type
             // nebulaContext.RegisterJobProcessor(typeof(SampleJobProcessor),typeof(SampleJobStep));
@@ -25,6 +26,8 @@ namespace SampleWorker
             nebulaContext.RedisConnectionString = "localhost:6379";
 
             nebulaContext.StartWorkerService();
+
+            var queue = nebulaContext.GetDelayedJobQueue<SampleJobStep>(QueueType.Delayed);
 
             Console.WriteLine("Service started. Press ENTER to stop.");
             Console.ReadLine();
