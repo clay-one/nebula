@@ -45,11 +45,11 @@ namespace SampleJob
 
                 var queue = Nebula.GetDelayedJobQueue<SampleJobStep>(QueueType.Delayed);
 
-                var tick = DateTime.UtcNow.Ticks;
-                await queue.Enqueue(initialStep, tick, jobId);
-                await queue.Enqueue(new SampleJobStep {Number = 2}, tick, jobId);
-                await queue.Enqueue(new SampleJobStep {Number = 3}, tick, jobId);
-                await queue.Enqueue(new SampleJobStep {Number = 4}, tick, jobId);
+                var processTime = DateTime.UtcNow;
+                await queue.Enqueue(initialStep, processTime, jobId);
+                await queue.Enqueue(new SampleJobStep {Number = 2}, processTime, jobId);
+                await queue.Enqueue(new SampleJobStep {Number = 3}, processTime, jobId);
+                await queue.Enqueue(new SampleJobStep {Number = 4}, processTime, jobId);
 
                 await jobManager.StartJobIfNotStarted(string.Empty, nameof(SampleJobStep));
             }

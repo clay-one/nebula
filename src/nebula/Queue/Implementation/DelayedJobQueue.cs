@@ -56,23 +56,31 @@ namespace Nebula.Queue.Implementation
                 .Select(s => s.FromJson<TItem>());
         }
 
-        public async Task Enqueue(TItem item, long ticks, string jobId = null)
+        public async Task Enqueue(TItem item, DateTime processTime, string jobId = null)
         {
-            await RedisManager.GetDatabase().SortedSetAddAsync(GetRedisKey(jobId), item.ToJson(), ticks);
+            await RedisManager.GetDatabase().SortedSetAddAsync(GetRedisKey(jobId), item.ToJson(), processTime.Ticks);
         }
 
-        public async Task EnqueueBatch(IEnumerable<Tuple<TItem, long>> items, string jobId = null)
+        public async Task EnqueueBatch(IEnumerable<Tuple<TItem, DateTime>> items, string jobId = null)
         {
             var redisKey = GetRedisKey(jobId);
             var redisDb = RedisManager.GetDatabase();
-            var tasks = items.Select(item => redisDb.SortedSetAddAsync(redisKey, item.Item1.ToJson(), item.Item2));
+            var tasks = items.Select(item =>
+                redisDb.SortedSetAddAsync(redisKey, item.Item1.ToJson(), item.Item2.Ticks));
             await Task.WhenAll(tasks);
         }
 
-        public async Task EnqueueBatch(IEnumerable<TItem> items, long ticks, string jobId = null)
+        public async Task EnqueueBatch(IEnumerable<TItem> items, DateTime processTime, string jobId = null)
         {
-            var steps = items.Select(item => new Tuple<TItem, long>(item, ticks)).ToList();
+            var steps = items.Select(item => new Tuple<TItem, DateTime>(item, processTime)).ToList();
 
+            await EnqueueBatch(steps, jobId);
+        }
+
+        public async Task EnqueueBatch(IEnumerable<Tuple<TItem, TimeSpan>> items, string jobId = null)
+        {
+            var now = DateTime.UtcNow;
+            var steps = items.Select(item => new Tuple<TItem, DateTime>(item.Item1, now + item.Item2)).ToList();
             await EnqueueBatch(steps, jobId);
         }
 

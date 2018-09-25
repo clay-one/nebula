@@ -8,8 +8,9 @@ namespace Nebula.Queue
     [Contract]
     public interface IDelayedJobQueue<TItem> : IJobStepSource<TItem> where TItem : IJobStep
     {
-        Task Enqueue(TItem item, long ticks, string jobId = null);
-        Task EnqueueBatch(IEnumerable<Tuple<TItem, long>> items, string jobId = null);
-        Task EnqueueBatch(IEnumerable<TItem> items, long ticks, string jobId = null);
+        Task Enqueue(TItem item, DateTime processTime, string jobId = null);
+        Task EnqueueBatch(IEnumerable<Tuple<TItem, DateTime>> items, string jobId = null);
+        Task EnqueueBatch(IEnumerable<TItem> items, DateTime processTime, string jobId = null);
+        Task EnqueueBatch(IEnumerable<Tuple<TItem, TimeSpan>> items, string jobId = null);
     }
 }

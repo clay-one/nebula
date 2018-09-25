@@ -29,7 +29,7 @@ namespace Test.JobQueue
         {
             var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
 
-            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow.Ticks, _jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow, _jobId);
             await queue.GetNext(_jobId);
 
             Assert.IsFalse(await queue.Any(_jobId));
@@ -40,8 +40,8 @@ namespace Test.JobQueue
         {
             var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
 
-            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow.Ticks, _jobId);
-            await queue.Enqueue(new FirstJobStep {Number = 2}, DateTime.UtcNow.Ticks, _jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow, _jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 2}, DateTime.UtcNow, _jobId);
             await queue.GetNext(_jobId);
 
             Assert.IsTrue(await queue.Any(_jobId));
@@ -53,7 +53,7 @@ namespace Test.JobQueue
             var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
 
             var jobId = Guid.NewGuid().ToString();
-            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow.Ticks, jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow, jobId);
             await queue.Purge(jobId);
 
             Assert.IsFalse(await queue.Any(jobId));
@@ -65,7 +65,7 @@ namespace Test.JobQueue
             var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
 
             var enQueuedItem = new FirstJobStep {Number = 1};
-            await queue.Enqueue(enQueuedItem, DateTime.UtcNow.Ticks, _jobId);
+            await queue.Enqueue(enQueuedItem, DateTime.UtcNow, _jobId);
             var dequeuedItem = await queue.GetNext(_jobId);
 
             Assert.IsNotNull(dequeuedItem);
@@ -77,8 +77,8 @@ namespace Test.JobQueue
         {
             var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
 
-            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow.Ticks, _jobId);
-            await queue.Enqueue(new FirstJobStep {Number = 2}, DateTime.UtcNow.Ticks, _jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow, _jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 2}, DateTime.UtcNow, _jobId);
 
             var item1 = await queue.GetNext(_jobId);
             var item2 = await queue.GetNext(_jobId);
@@ -93,11 +93,11 @@ namespace Test.JobQueue
         {
             var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
 
-            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow.Ticks, _jobId);
-            await queue.Enqueue(new FirstJobStep {Number = 2}, DateTime.UtcNow.Ticks, _jobId);
-            await queue.Enqueue(new FirstJobStep {Number = 3}, DateTime.UtcNow.Ticks, _jobId);
-            await queue.Enqueue(new FirstJobStep {Number = 4}, DateTime.UtcNow.Ticks, _jobId);
-            await queue.Enqueue(new FirstJobStep {Number = 5}, DateTime.UtcNow.Ticks, _jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow, _jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 2}, DateTime.UtcNow, _jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 3}, DateTime.UtcNow, _jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 4}, DateTime.UtcNow, _jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 5}, DateTime.UtcNow, _jobId);
             var items = await queue.GetNextBatch(2, _jobId);
 
             Assert.IsNotNull(items);
@@ -109,7 +109,7 @@ namespace Test.JobQueue
         {
             var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
 
-            var time = DateTime.UtcNow.Ticks;
+            var time = DateTime.UtcNow;
             var items = new List<FirstJobStep>
             {
                 new FirstJobStep {Number = 1},
@@ -133,13 +133,37 @@ namespace Test.JobQueue
             var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
 
             var time = DateTime.UtcNow;
-            var items = new List<Tuple<FirstJobStep, long>>
+            var items = new List<Tuple<FirstJobStep, DateTime>>
             {
-                new Tuple<FirstJobStep, long>(new FirstJobStep {Number = 1}, time.AddDays(1).Ticks),
-                new Tuple<FirstJobStep, long>(new FirstJobStep {Number = 2}, time.AddDays(1).Ticks),
-                new Tuple<FirstJobStep, long>(new FirstJobStep {Number = 3}, time.AddDays(2).Ticks),
-                new Tuple<FirstJobStep, long>(new FirstJobStep {Number = 4}, time.AddHours(-1).Ticks),
-                new Tuple<FirstJobStep, long>(new FirstJobStep {Number = 5}, time.AddHours(1).Ticks)
+                new Tuple<FirstJobStep, DateTime>(new FirstJobStep {Number = 1}, time.AddDays(1)),
+                new Tuple<FirstJobStep, DateTime>(new FirstJobStep {Number = 2}, time.AddDays(1)),
+                new Tuple<FirstJobStep, DateTime>(new FirstJobStep {Number = 3}, time.AddDays(2)),
+                new Tuple<FirstJobStep, DateTime>(new FirstJobStep {Number = 4}, time.AddHours(-1)),
+                new Tuple<FirstJobStep, DateTime>(new FirstJobStep {Number = 5}, time.AddHours(1))
+            };
+
+            await queue.EnqueueBatch(items, _jobId);
+
+            var result = await queue.GetNextBatch(2, _jobId);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count());
+            Assert.AreEqual(4, result.SingleOrDefault().Number);
+        }
+
+        [TestMethod]
+        public async Task DelayedQueue_Add5ItemWithDelay_ShouldReturn1()
+        {
+            var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
+
+            var now = DateTime.UtcNow;
+            var items = new List<Tuple<FirstJobStep, TimeSpan>>
+            {
+                new Tuple<FirstJobStep, TimeSpan>(new FirstJobStep {Number = 1}, now.AddDays(1) - now),
+                new Tuple<FirstJobStep, TimeSpan>(new FirstJobStep {Number = 2}, now.AddDays(1) - now),
+                new Tuple<FirstJobStep, TimeSpan>(new FirstJobStep {Number = 3}, now.AddDays(2) - now),
+                new Tuple<FirstJobStep, TimeSpan>(new FirstJobStep {Number = 4}, now.AddHours(-1) - now),
+                new Tuple<FirstJobStep, TimeSpan>(new FirstJobStep {Number = 5}, now.AddHours(1) - now)
             };
 
             await queue.EnqueueBatch(items, _jobId);
