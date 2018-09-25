@@ -175,6 +175,45 @@ namespace Test.JobQueue
             Assert.AreEqual(4, result.SingleOrDefault().Number);
         }
 
+        [TestMethod]
+        public async Task DelayedQueue_Add5ItemWithDelay_ShouldReturn0()
+        {
+            var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
+
+            var now = DateTime.UtcNow;
+            
+            var items = new List<FirstJobStep>
+            {
+                new FirstJobStep {Number = 1},
+                new FirstJobStep {Number = 2},
+                new FirstJobStep {Number = 3},
+                new FirstJobStep {Number = 4},
+                new FirstJobStep {Number = 5}
+            };
+
+            await queue.EnqueueBatch(items, now.AddHours(1) - now, _jobId);
+
+            var result = await queue.GetNextBatch(2, _jobId);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count());
+        }
+
+        [TestMethod]
+        public async Task DelayedQueue_Add1ItemWithDelay_ShouldReturn0()
+        {
+            var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
+
+            var now = DateTime.UtcNow;
+
+            await queue.Enqueue(new FirstJobStep { Number = 1 }, now.AddHours(1) - now, _jobId);
+
+            var result = await queue.GetNextBatch(2, _jobId);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count());
+        }
+
         [TestCleanup]
         public async Task CleanUp()
         {
