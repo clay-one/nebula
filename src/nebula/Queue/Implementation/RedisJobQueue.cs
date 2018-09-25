@@ -42,7 +42,7 @@ namespace Nebula.Queue.Implementation
         public async Task<bool> Any(string jobId = null)
         {
             var queueLength = await RedisManager.GetDatabase().ListLengthAsync(GetRedisKey(jobId));
-            return await Task.FromResult(queueLength > 0);
+            return queueLength > 0;
         }
 
         public async Task Purge(string jobId = null)

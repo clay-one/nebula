@@ -24,7 +24,7 @@ namespace Nebula.Queue.Implementation
         public async Task<bool> Any(string jobId = null)
         {
             var queueLength = await RedisManager.GetDatabase().SortedSetLengthAsync(GetRedisKey(jobId));
-            return await Task.FromResult(queueLength > 0);
+            return queueLength > 0;
         }
 
         public async Task Purge(string jobId = null)
@@ -35,7 +35,7 @@ namespace Nebula.Queue.Implementation
         public async Task<TItem> GetNext(string jobId = null)
         {
             var now = DateTime.UtcNow.Ticks;
-            string serialized = await RedisManager.GetDatabase().Pop(GetRedisKey(jobId), now);
+            string serialized = await RedisManager.GetDatabase().SortedSetPopAsync(GetRedisKey(jobId), now);
             return serialized.FromJson<TItem>();
         }
 
@@ -47,7 +47,7 @@ namespace Nebula.Queue.Implementation
             var redisDb = RedisManager.GetDatabase();
             var tasks = Enumerable
                 .Range(1, maxBatchSize)
-                .Select(i => redisDb.Pop(redisKey, now));
+                .Select(i => redisDb.SortedSetPopAsync(redisKey, now));
 
             var results = await Task.WhenAll(tasks);
             return results

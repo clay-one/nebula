@@ -6,7 +6,7 @@ namespace Nebula.Storage
 {
     public static class RedisExtentions
     {
-        public static async Task<RedisValue> Pop(this IDatabase db, RedisKey key, double maxScore)
+        public static async Task<RedisValue> SortedSetPopAsync(this IDatabase db, RedisKey key, double maxScore)
         {
             try
             {
