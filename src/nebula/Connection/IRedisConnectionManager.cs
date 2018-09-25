@@ -4,7 +4,7 @@ using StackExchange.Redis;
 namespace Nebula.Connection
 {
     [Contract]
-    public interface IRedisManager
+    public interface IRedisConnectionManager
     {
         IDatabase GetDatabase();
         ISubscriber GetSubscriber();

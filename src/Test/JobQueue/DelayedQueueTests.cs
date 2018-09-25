@@ -154,7 +154,7 @@ namespace Test.JobQueue
         [TestCleanup]
         public async Task CleanUp()
         {
-            var redisManager = Nebula.ComponentContext.GetComponent<IRedisManager>();
+            var redisManager = Nebula.ComponentContext.GetComponent<IRedisConnectionManager>();
             if (redisManager != null)
                 await redisManager.GetDatabase().KeyDeleteAsync("job_" + _jobId);
         }

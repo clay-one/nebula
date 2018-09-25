@@ -13,7 +13,7 @@ namespace Nebula.Queue.Implementation
     public class RedisJobQueue<TItem> : IJobQueue<TItem> where TItem : IJobStep
     {
         [ComponentPlug]
-        public IRedisManager RedisManager { get; set; }
+        public IRedisConnectionManager RedisManager { get; set; }
 
         public async Task<long> GetQueueLength(string jobId = null)
         {

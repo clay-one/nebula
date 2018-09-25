@@ -51,8 +51,8 @@ namespace Test
 
         protected void RegisterMockRedisManager()
         {
-            Nebula.ComponentContext.Unregister(new ContractIdentity(typeof(IRedisManager)));
-            Nebula.ComponentContext.Register(typeof(IRedisManager), typeof(MockRedisManager));
+            Nebula.ComponentContext.Unregister(new ContractIdentity(typeof(IRedisConnectionManager)));
+            Nebula.ComponentContext.Register(typeof(IRedisConnectionManager), typeof(MockRedisManager));
         }
     }
 }

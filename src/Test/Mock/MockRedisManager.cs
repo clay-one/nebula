@@ -6,7 +6,7 @@ using StackExchange.Redis;
 namespace Test.Mock
 {
     [Component]
-    public class MockRedisManager : IRedisManager
+    public class MockRedisManager : IRedisConnectionManager
     {
         private ConnectionMultiplexer _connectionMultiplexer;
         public string ConnectionString = "localhost:6379";
