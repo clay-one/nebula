@@ -13,7 +13,7 @@ namespace Nebula.Queue.Implementation
 //        private Thread _targetThread;
 
         [ComponentPlug]
-        public IRedisManager RedisManager { get; set; }
+        public IRedisConnectionManager RedisManager { get; set; }
 
         [ComponentPlug]
         public IJobNotificationTarget NotificationTarget { get; set; }

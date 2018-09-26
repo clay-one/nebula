@@ -13,7 +13,7 @@ namespace Nebula.Queue.Implementation
     public class RedisJobQueue<TItem> : IJobQueue<TItem> where TItem : IJobStep
     {
         [ComponentPlug]
-        public IRedisManager RedisManager { get; set; }
+        public IRedisConnectionManager RedisManager { get; set; }
 
         public async Task<long> GetQueueLength(string jobId = null)
         {
@@ -42,7 +42,7 @@ namespace Nebula.Queue.Implementation
         public async Task<bool> Any(string jobId = null)
         {
             var queueLength = await RedisManager.GetDatabase().ListLengthAsync(GetRedisKey(jobId));
-            return await Task.FromResult(queueLength > 0);
+            return queueLength > 0;
         }
 
         public async Task Purge(string jobId = null)

@@ -58,6 +58,11 @@ namespace Nebula
             return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>), queueTypeName) as IJobQueue<TJobStep>;
         }
 
+        public IDelayedJobQueue<TJobStep> GetDelayedJobQueue<TJobStep>(string queueTypeName) where TJobStep : IJobStep
+        {
+            return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>), queueTypeName) as IDelayedJobQueue<TJobStep>;
+        }
+
         public IJobManager GetJobManager()
         {
             return ComponentContext.GetComponent<IJobManager>();

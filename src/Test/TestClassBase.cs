@@ -1,6 +1,7 @@
 ﻿using ComposerCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nebula;
+using Nebula.Connection;
 using Nebula.Job;
 using Nebula.Job.Runner;
 using Nebula.Multitenancy;
@@ -23,16 +24,35 @@ namespace Test
             ConfigureNebula();
         }
 
-        protected static void ConfigureNebula()
+        protected virtual void ConfigureNebula()
+        {
+            RegisterMockJobStore();
+            RegisterMockJobNotification();
+            RegisterMockBackgroundTaskScheduler();
+        }
+
+        protected void RegisterMockBackgroundTaskScheduler()
+        {
+            Nebula.ComponentContext.Unregister(new ContractIdentity(typeof(IBackgroundTaskScheduler)));
+            Nebula.ComponentContext.Register(typeof(IBackgroundTaskScheduler), typeof(MockBackgroundTaskScheduler));
+        }
+
+        protected void RegisterMockJobNotification()
+        {
+            Nebula.ComponentContext.Unregister(new ContractIdentity(typeof(IJobNotification)));
+            Nebula.ComponentContext.Register(typeof(IJobNotification), typeof(MockJobNotification));
+        }
+
+        protected void RegisterMockJobStore()
         {
             Nebula.ComponentContext.Unregister(new ContractIdentity(typeof(IJobStore)));
             Nebula.ComponentContext.Register(typeof(IJobStore), typeof(MockJobStore));
+        }
 
-            Nebula.ComponentContext.Unregister(new ContractIdentity(typeof(IJobNotification)));
-            Nebula.ComponentContext.Register(typeof(IJobNotification), typeof(MockJobNotification));
-
-            Nebula.ComponentContext.Unregister(new ContractIdentity(typeof(IBackgroundTaskScheduler)));
-            Nebula.ComponentContext.Register(typeof(IBackgroundTaskScheduler), typeof(MockBackgroundTaskScheduler));
+        protected void RegisterMockRedisManager()
+        {
+            Nebula.ComponentContext.Unregister(new ContractIdentity(typeof(IRedisConnectionManager)));
+            Nebula.ComponentContext.Register(typeof(IRedisConnectionManager), typeof(MockRedisManager));
         }
     }
 }
