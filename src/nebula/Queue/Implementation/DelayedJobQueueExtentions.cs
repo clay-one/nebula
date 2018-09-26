@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using hydrogen.General.Utils;
 
 namespace Nebula.Queue.Implementation
 {
@@ -10,15 +11,15 @@ namespace Nebula.Queue.Implementation
         public static async Task Enqueue<TItem>(this IDelayedJobQueue<TItem> delayedQueue, TItem item,
             DateTime processTime, string jobId = null) where TItem : IJobStep
         {
-            await delayedQueue.EnqueueBatch(
-                new List<Tuple<TItem, DateTime>> {new Tuple<TItem, DateTime>(item, processTime)}, jobId);
+            var step = new Tuple<TItem, DateTime>(item, processTime);
+            await delayedQueue.EnqueueBatch(step.Yield(), jobId);
         }
 
         public static async Task Enqueue<TItem>(this IDelayedJobQueue<TItem> delayedQueue, TItem item,
             TimeSpan delay, string jobId = null) where TItem : IJobStep
         {
-            await delayedQueue.EnqueueBatch(
-                new List<Tuple<TItem, TimeSpan>> {new Tuple<TItem, TimeSpan>(item, delay)}, jobId);
+            var step = new Tuple<TItem, TimeSpan>(item, delay);
+            await delayedQueue.EnqueueBatch(step.Yield(), jobId);
         }
 
         public static async Task EnqueueBatch<TItem>(this IDelayedJobQueue<TItem> delayedQueue,
