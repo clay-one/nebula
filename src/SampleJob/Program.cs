@@ -10,13 +10,11 @@ namespace SampleJob
 {
     internal class Program
     {
-        public static NebulaContext  Nebula = new NebulaContext();
+        public static NebulaContext Nebula = new NebulaContext();
+
         private static void Main()
         {
-            Nebula.RegisterJobQueue(typeof(RedisJobQueue<>), QueueType.Redis);
-
-            // register processor by type
-            // Nebula.RegisterJobProcessor(typeof(SampleJobProcessor), typeof(SampleJobStep));
+            Nebula.RegisterJobQueue(typeof(DelayedJobQueue<>), QueueType.Delayed);
             
             Nebula.MongoConnectionString = "mongodb://localhost:27017/SampleJob";
             Nebula.RedisConnectionString = "localhost:6379";
@@ -33,11 +31,11 @@ namespace SampleJob
                 var jobId = await jobManager.CreateNewJobOrUpdateDefinition<SampleJobStep>(
                     string.Empty, "sample-job", nameof(SampleJobStep), new JobConfigurationData
                     {
-                        MaxBatchSize = 100,
+                        MaxBatchSize = 1,
                         MaxConcurrentBatchesPerWorker = 5,
                         IsIndefinite = false,
                         MaxBlockedSecondsPerCycle = 300,
-                        QueueTypeName = QueueType.Redis
+                        QueueTypeName = QueueType.Delayed
                     });
 
                 var initialStep = new SampleJobStep
@@ -45,7 +43,13 @@ namespace SampleJob
                     Number = 1
                 };
 
-                await Nebula.GetJobQueue<SampleJobStep>(QueueType.Redis).Enqueue(initialStep, jobId);
+                var queue = Nebula.GetDelayedJobQueue<SampleJobStep>(QueueType.Delayed);
+
+                var processTime = DateTime.UtcNow;
+                await queue.Enqueue(initialStep, processTime, jobId);
+                await queue.Enqueue(new SampleJobStep {Number = 2}, processTime, jobId);
+                await queue.Enqueue(new SampleJobStep {Number = 3}, processTime, jobId);
+                await queue.Enqueue(new SampleJobStep {Number = 4}, processTime, jobId);
 
                 await jobManager.StartJobIfNotStarted(string.Empty, nameof(SampleJobStep));
             }

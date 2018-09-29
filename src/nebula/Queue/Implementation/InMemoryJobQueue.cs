@@ -23,28 +23,11 @@ namespace Nebula.Queue.Implementation
             _lockObject = new object();
         }
 
-        public bool QueueExistenceChecked { get; set; }
-
-        public Task EnsureJobQueueExists(string jobId = null)
-        {
-            QueueExistenceChecked = true;
-            return Task.CompletedTask;
-        }
-
         public Task<long> GetQueueLength(string jobId = null)
         {
             lock (_lockObject)
             {
                 return Task.FromResult((long) GetQueue(jobId).Count);
-            }
-        }
-
-        public Task PurgeQueueContents(string jobId = null)
-        {
-            lock (_lockObject)
-            {
-                GetQueue(jobId).Clear();
-                return Task.CompletedTask;
             }
         }
 
@@ -68,7 +51,30 @@ namespace Nebula.Queue.Implementation
             return Task.CompletedTask;
         }
 
-        public Task<TItem> Dequeue(string jobId = null)
+        public Task EnsureJobSourceExists(string jobId = null)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task<bool> Any(string jobId = null)
+        {
+            lock (_lockObject)
+            {
+                var queueLength = (long) GetQueue(jobId).Count;
+                return Task.FromResult(queueLength > 0);
+            }
+        }
+
+        public Task Purge(string jobId = null)
+        {
+            lock (_lockObject)
+            {
+                GetQueue(jobId).Clear();
+                return Task.CompletedTask;
+            }
+        }
+
+        public Task<TItem> GetNext(string jobId = null)
         {
             lock (_lockObject)
             {
@@ -77,7 +83,7 @@ namespace Nebula.Queue.Implementation
             }
         }
 
-        public Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)
+        public Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize, string jobId = null)
         {
             lock (_lockObject)
             {
@@ -100,5 +106,29 @@ namespace Nebula.Queue.Implementation
 
             return queue;
         }
+
+        #region Obsolete members
+
+        public Task EnsureJobQueueExists(string jobId = null)
+        {
+            return EnsureJobSourceExists(jobId);
+        }
+
+        public Task PurgeQueueContents(string jobId = null)
+        {
+            return Purge(jobId);
+        }
+
+        public Task<TItem> Dequeue(string jobId = null)
+        {
+            return GetNext(jobId);
+        }
+
+        public Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)
+        {
+            return GetNextBatch(maxBatchSize, jobId);
+        }
+
+        #endregion
     }
 }

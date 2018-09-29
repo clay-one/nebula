@@ -43,19 +43,24 @@ namespace Nebula
                 x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IJobProcessor<>));
 
             if (!isTypeCorrect)
-                throw new ArgumentException("processor should implement IJobProcessor<>");
+                throw new ArgumentException("Processor should implement IJobProcessor<>");
 
             ComponentContext.Register(contract, new PreInitializedComponentFactory(processor));
         }
 
         public void RegisterJobQueue(Type jobQueue, string queueTypeName)
         {
-            ComponentContext.Register(typeof(IJobQueue<>), queueTypeName, jobQueue);
+            ComponentContext.Register(typeof(IJobStepSource<>), queueTypeName, jobQueue);
         }
 
         public IJobQueue<TJobStep> GetJobQueue<TJobStep>(string queueTypeName) where TJobStep : IJobStep
         {
-            return ComponentContext.GetComponent(typeof(IJobQueue<TJobStep>), queueTypeName) as IJobQueue<TJobStep>;
+            return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>), queueTypeName) as IJobQueue<TJobStep>;
+        }
+
+        public IDelayedJobQueue<TJobStep> GetDelayedJobQueue<TJobStep>(string queueTypeName) where TJobStep : IJobStep
+        {
+            return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>), queueTypeName) as IDelayedJobQueue<TJobStep>;
         }
 
         public IJobManager GetJobManager()

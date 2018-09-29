@@ -7,6 +7,7 @@ using ComposerCore.Implementation;
 using hydrogen.General.Collections;
 using hydrogen.General.Text;
 using hydrogen.General.Validation;
+using log4net;
 using Nebula.Queue;
 using Nebula.Storage;
 using Nebula.Storage.Model;
@@ -27,6 +28,9 @@ namespace Nebula.Job.Implementation
 
         [ComponentPlug]
         public IComponentContext ComponentContext { get; set; }
+
+        private  readonly ILog Log =
+            LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public Task CleanupOldJobs()
         {
@@ -76,11 +80,11 @@ namespace Nebula.Job.Implementation
 
             await JobStore.AddOrUpdateDefinition(job);
             
-            var queue = Composer.GetComponent<IJobQueue<TJobStep>>(job.Configuration.QueueTypeName);
-            if (queue == null)
+            var jobStepSource = Composer.GetComponent<IJobStepSource<TJobStep>>(job.Configuration.QueueTypeName);
+            if (jobStepSource == null)
                 throw new CompositionException("JobQueue should be registered");
 
-            await queue.EnsureJobQueueExists(jobId);
+            await jobStepSource.EnsureJobSourceExists(jobId);
             
             return jobId;
         }
@@ -149,9 +153,9 @@ namespace Nebula.Job.Implementation
                 {
                     await JobNotification.NotifyJobUpdated(jobId);
                     
-                    var jobQueue = GetJobQueue(jobData);
-                    if (jobQueue != null)
-                        await jobQueue.PurgeQueueContents(jobId);
+                    var jobStepSource = GetJobQueue(jobData);
+                    if (jobStepSource != null)
+                        await jobStepSource.Purge(jobId);
                     
                     return ApiValidationResult.Ok();
                 }
@@ -235,18 +239,18 @@ namespace Nebula.Job.Implementation
             if (jobData == null)
                 return ApiValidationResult.Failure(ErrorKeys.InvalidJobId);
             
-            var jobQueue = GetJobQueue(jobData);
-            if (jobQueue == null)
+            var jobStepSource = GetJobQueue(jobData);
+            if (jobStepSource == null)
                 return ApiValidationResult.Failure(ErrorKeys.UnknownInternalServerError);
 
-            await jobQueue.PurgeQueueContents(jobId);
+            await jobStepSource.Purge(jobId);
             return ApiValidationResult.Ok();
         }
 
         public async Task<long> GetQueueLength(string tenantId, string jobId)
         {
-            var jobQueue = GetJobQueue((await JobStore.Load(tenantId, jobId)));
-            return jobQueue == null ? 0 : await jobQueue.GetQueueLength(jobId);
+            var jobStepSource = GetJobQueue(await JobStore.Load(tenantId, jobId));
+            return !(jobStepSource is IJobQueue jobQueue) ? 0 : await jobQueue.GetQueueLength(jobId);
         }
 
         #region Private helper methods
@@ -256,12 +260,12 @@ namespace Nebula.Job.Implementation
             if (configuration == null)
                 throw new ArgumentException("Configuration cannot null");
 
-            configuration.MaxBatchSize = Math.Max(JobConfigurationDefaultValue.MinBatchSize,
-                Math.Min(JobConfigurationDefaultValue.MaxBatchSize, configuration.MaxBatchSize));
+            configuration.MaxBatchSize = Math.Max(JobConfigurationDefaultValues.MinBatchSize,
+                Math.Min(JobConfigurationDefaultValues.MaxBatchSize, configuration.MaxBatchSize));
 
             configuration.MaxConcurrentBatchesPerWorker =
-                Math.Max(JobConfigurationDefaultValue.MinConcurrentBatchesPerWorker,
-                    Math.Min(JobConfigurationDefaultValue.MaxConcurrentBatchesPerWorker,
+                Math.Max(JobConfigurationDefaultValues.MinConcurrentBatchesPerWorker,
+                    Math.Min(JobConfigurationDefaultValues.MaxConcurrentBatchesPerWorker,
                         configuration.MaxConcurrentBatchesPerWorker));
 
             if (configuration.ThrottledItemsPerSecond.HasValue &&
@@ -269,11 +273,11 @@ namespace Nebula.Job.Implementation
                 throw new ArgumentException("Throttle speed cannot be zero or negative");
             if (configuration.ThrottledItemsPerSecond.HasValue)
                 configuration.ThrottledItemsPerSecond =
-                    Math.Max(JobConfigurationDefaultValue.MinThrottledItemsPerSecond,
+                    Math.Max(JobConfigurationDefaultValues.MinThrottledItemsPerSecond,
                         configuration.ThrottledItemsPerSecond.Value);
 
             if (configuration.ThrottledMaxBurstSize.HasValue && configuration.ThrottledMaxBurstSize <=
-                JobConfigurationDefaultValue.MinThrottledMaxBurstSize)
+                JobConfigurationDefaultValues.MinThrottledMaxBurstSize)
                 throw new ArgumentException("Throttle burst size cannot be zero or negative");
 
             if (configuration.ExpiresAt.HasValue && configuration.ExpiresAt < DateTime.Now)
@@ -284,20 +288,20 @@ namespace Nebula.Job.Implementation
 
             if (configuration.IdleSecondsToCompletion.HasValue)
                 configuration.IdleSecondsToCompletion =
-                    Math.Max(JobConfigurationDefaultValue.MinIdleSecondsToCompletion,
+                    Math.Max(JobConfigurationDefaultValues.MinIdleSecondsToCompletion,
                         configuration.IdleSecondsToCompletion.Value);
 
             if (configuration.MaxBlockedSecondsPerCycle.HasValue)
                 configuration.MaxBlockedSecondsPerCycle = Math.Max(
-                    JobConfigurationDefaultValue.MinMaxBlockedSecondsPerCycle,
+                    JobConfigurationDefaultValues.MinMaxBlockedSecondsPerCycle,
                     configuration.MaxBlockedSecondsPerCycle.Value);
 
             if (configuration.MaxTargetQueueLength.HasValue)
-                configuration.MaxTargetQueueLength = Math.Max(JobConfigurationDefaultValue.MinMaxTargetQueueLength,
+                configuration.MaxTargetQueueLength = Math.Max(JobConfigurationDefaultValues.MinMaxTargetQueueLength,
                     configuration.MaxTargetQueueLength.Value);
         }
 
-        private IJobQueue GetJobQueue(JobData job)
+        private IJobStepSource GetJobQueue(JobData job)
         {
             if (string.IsNullOrWhiteSpace(job.JobStepType))
                 return null;
@@ -305,24 +309,24 @@ namespace Nebula.Job.Implementation
             var stepType = Type.GetType(job.JobStepType);
             if (stepType == null)
             {
-                // TODO: Log error
+                Log.Error($"JobStepType {job.JobStepType} is not defined.");
                 return null;
             }
 
             if (!(typeof(IJobStep)).IsAssignableFrom(stepType))
             {
-                // TODO: Log error
+                Log.Error($"JobStepType {job.JobStepType}  is not IJobStep.");
                 return null;
             }
             
-            var contract = typeof(IJobQueue<>).MakeGenericType(stepType);
-            if (!(Composer.GetComponent(contract,job.Configuration.QueueTypeName) is IJobQueue jobQueue))
+            var contract = typeof(IJobStepSource<>).MakeGenericType(stepType);
+            if (!(Composer.GetComponent(contract,job.Configuration.QueueTypeName) is IJobStepSource jobStepSource))
             {
-                // TODO: Log error
+                Log.Error($"JobStepSource {job.JobStepType} is not defined.");
                 return null;
             }
 
-            return jobQueue;
+            return jobStepSource;
         }
 
         #endregion

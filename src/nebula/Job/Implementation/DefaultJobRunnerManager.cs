@@ -94,7 +94,12 @@ namespace Nebula.Job.Implementation
 
         public bool IsJobRunnerStarted(string jobId)
         {
-            return _runners.TryGetValue(jobId, out var runner) && !runner.IsProcessRunning;
+            return _runners.TryGetValue(jobId, out var runner) && runner.IsProcessRunning;
+        }
+
+        public bool IsJobRunnerStoped(string jobId)
+        {
+            return _runners.TryGetValue(jobId, out var runner) && runner.IsProcessStopping;
         }
 
         private async Task<IJobRunner> GetOrCreateRunner(string jobId)

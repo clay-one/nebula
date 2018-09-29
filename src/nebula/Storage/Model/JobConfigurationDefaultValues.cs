@@ -1,6 +1,6 @@
 ﻿namespace Nebula.Storage.Model
 {
-    public class JobConfigurationDefaultValue
+    public class JobConfigurationDefaultValues
     {
         public const int MinBatchSize = 1;
         public const int MaxBatchSize = 1000;

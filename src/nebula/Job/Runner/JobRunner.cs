@@ -58,6 +58,9 @@ namespace Nebula.Job.Runner
         [ComponentPlug]
         public NebulaContext NebulaContext { get; set; }
 
+        [ComponentPlug]
+        public IBackgroundTaskScheduler BackgroundTaskScheduler { get; set; }
+
         [CompositionConstructor]
         public JobRunner(IComposer composer, IJobProcessor<TJobStep> processor, IJobStore jobStore,
             IJobRunnerManager jobRunnerManager, JobStatisticsCalculator statistics, IJobNotification jobNotification)
@@ -74,6 +77,8 @@ namespace Nebula.Job.Runner
         public string JobId => _jobId;
 
         public bool IsProcessRunning => _started && !_terminated;
+
+        public bool IsProcessStopping => _stopping;
 
         public bool IsProcessTerminated => _terminated;
 
@@ -118,6 +123,8 @@ namespace Nebula.Job.Runner
 
         private bool ShouldStartProcess => !_started && IsInRunningState;
 
+        private bool ShouldProcessStop => _lastStatus.State == JobState.Stopped;
+
         private bool IsProcessStalled
         {
             get
@@ -147,9 +154,9 @@ namespace Nebula.Job.Runner
             if (_jobData.Configuration.IsIndefinite)
                 return false;
 
-            var queue = _composer.GetComponent<IJobQueue<TJobStep>>(_jobData.Configuration.QueueTypeName);
+            var jobStepSource = _composer.GetComponent<IJobStepSource<TJobStep>>(_jobData.Configuration.QueueTypeName);
 
-            if (await queue.GetQueueLength(_jobId) > 0)
+            if (await jobStepSource.Any(_jobId))
                 return false;
 
             // JobRunnerManager always runs preprocessor tasks before running a task. So, it will siffice
@@ -198,6 +205,13 @@ namespace Nebula.Job.Runner
                     return false;
                 }
 
+                if (ShouldProcessStop)
+                {
+                    Log.Warn($"Job runner {_jobId} - Health check: we should stop processing");
+                    StopProcess();
+                    return true;
+                }
+
                 if (!IsInRunningState)
                 {
                     Log.Debug($"Job runner {_jobId} - Health check: everything looks okay");
@@ -232,6 +246,14 @@ namespace Nebula.Job.Runner
             return true;
         }
 
+     
+
+        private void StopProcess()
+        {
+            Log.Info($"Job runner {_jobId} - stop job runner");
+            _stopping = true;
+        }
+
         public void StopRunner()
         {
             _stopping = true;
@@ -257,15 +279,15 @@ namespace Nebula.Job.Runner
             {
                 await _jobNotification.NotifyJobUpdated(_jobId);
 
-                var finalizableProcessor = _processor as IFinalizableJobProcessor<TJobStep>;
-                finalizableProcessor?.JobCompleted();
+                if (_processor is IFinalizableJobProcessor<TJobStep> finalizableProcessor)
+                    await finalizableProcessor.JobCompleted();
             }
         }
 
         private void StartProcess()
         {
             // Enqueue the work to be run in the background, so not awaiting
-            Task.Run(Process);
+            BackgroundTaskScheduler.Run(Process);
         }
 
         #endregion
@@ -395,9 +417,9 @@ namespace Nebula.Job.Runner
 
                 var nextBatchSize = Math.Min(throttledBatchSize, _jobData.Configuration.MaxBatchSize);
 
-                var queue = _composer.GetComponent<IJobQueue<TJobStep>>(_jobData.Configuration.QueueTypeName);
+                var queue = _composer.GetComponent<IJobStepSource<TJobStep>>(_jobData.Configuration.QueueTypeName);
 
-                steps = (await queue.DequeueBatch(nextBatchSize, _jobId)).SafeToList();
+                steps = (await queue.GetNextBatch(nextBatchSize, _jobId)).SafeToList();
                 if (steps == null || steps.Count <= 0)
                 {
                     Log.Debug($"Job runner {_jobId} - There's no more work to do");
