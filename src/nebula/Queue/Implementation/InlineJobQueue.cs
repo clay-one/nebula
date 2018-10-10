@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ComposerCore.Attributes;
@@ -16,7 +15,6 @@ namespace Nebula.Queue.Implementation
 
         public void Initialize(string jobId = null)
         {
-
         }
 
         public Task<long> GetQueueLength()
@@ -33,7 +31,7 @@ namespace Nebula.Queue.Implementation
         {
             await Processor.Process(items.ToList());
         }
-        
+
         public Task EnsureJobSourceExists()
         {
             return Task.CompletedTask;
@@ -58,29 +56,5 @@ namespace Nebula.Queue.Implementation
         {
             return Task.FromResult(Enumerable.Empty<TItem>());
         }
-
-        #region Obsolete members
-
-        public Task EnsureJobQueueExists(string jobId = null)
-        {
-            return EnsureJobSourceExists();
-        }
-
-        public Task PurgeQueueContents(string jobId = null)
-        {
-            return Purge();
-        }
-
-        public Task<TItem> Dequeue(string jobId = null)
-        {
-            return GetNext();
-        }
-
-        public Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)
-        {
-            return GetNextBatch(maxBatchSize);
-        }
-
-        #endregion
     }
 }

@@ -36,7 +36,7 @@ namespace Test
                     jobData.JobId) as IJobQueue<FirstJobStep>;
 
             await jobQueue.Enqueue(new FirstJobStep());
-            await jobQueue.PurgeQueueContents();
+            await jobQueue.Purge();
             var queueLeghnt = await jobQueue.GetQueueLength();
 
             Assert.AreEqual(0, queueLeghnt);

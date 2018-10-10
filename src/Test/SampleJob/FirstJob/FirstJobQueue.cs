@@ -31,7 +31,7 @@ namespace Test.SampleJob.FirstJob
         {
             throw new NotImplementedException();
         }
-        
+
         public Task EnsureJobSourceExists()
         {
             QueueExistenceChecked = true;
@@ -58,29 +58,5 @@ namespace Test.SampleJob.FirstJob
         {
             throw new NotImplementedException();
         }
-
-        #region Obsolete members
-
-        public Task EnsureJobQueueExists(string jobId = null)
-        {
-            return EnsureJobSourceExists();
-        }
-
-        public Task PurgeQueueContents(string jobId = null)
-        {
-            return Purge();
-        }
-
-        public Task<TItem> Dequeue(string jobId = null)
-        {
-            return GetNext();
-        }
-
-        public Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)
-        {
-            return GetNextBatch(maxBatchSize);
-        }
-
-        #endregion
     }
 }
