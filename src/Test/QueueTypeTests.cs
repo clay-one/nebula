@@ -81,7 +81,7 @@ namespace Test
 
             var jobData = await jobStore.LoadFromAnyTenant(jobId);
             var jobQueue =
-                Nebula.GetJobQueue<FirstJobStep>(jobData.Configuration.QueueTypeName);
+                Nebula.JobStepSourceBuilder.BuildJobStepSource<FirstJobStep>(jobData.Configuration.QueueTypeName);
 
             Assert.AreEqual(typeof(FirstJobQueue<FirstJobStep>), jobQueue.GetType());
         }
@@ -118,11 +118,11 @@ namespace Test
 
             var firstJobData = await jobStore.LoadFromAnyTenant(firstJob);
             var firstJobQueue =
-                Nebula.GetJobQueue<FirstJobStep>(firstJobData.Configuration.QueueTypeName);
+                Nebula.JobStepSourceBuilder.BuildJobStepSource<FirstJobStep>(firstJobData.Configuration.QueueTypeName);
 
             var secondJobData = await jobStore.LoadFromAnyTenant(secondJob);
             var secondJobQueue =
-                Nebula.GetJobQueue<SecondJobStep>(secondJobData.Configuration.QueueTypeName);
+                Nebula.JobStepSourceBuilder.BuildJobStepSource<SecondJobStep>(secondJobData.Configuration.QueueTypeName);
 
             Assert.AreEqual(typeof(FirstJobQueue<FirstJobStep>), firstJobQueue.GetType());
             Assert.AreEqual(typeof(SecondJobQueue<SecondJobStep>), secondJobQueue.GetType());

@@ -43,7 +43,7 @@ namespace SampleJob
                     Number = 1
                 };
 
-                var queue = Nebula.GetDelayedJobQueue<SampleJobStep>(QueueType.Delayed);
+                var queue = Nebula.JobStepSourceBuilder.BuildDelayedJobQueue<SampleJobStep>(jobId);
 
                 var processTime = DateTime.UtcNow;
                 await queue.Enqueue(initialStep, processTime, jobId);

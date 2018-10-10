@@ -30,7 +30,7 @@ namespace Test.JobQueue
         {
             var itemToEnqueue = new FirstJobStep {Number = 10};
 
-            var queue = Nebula.GetKafkaJobQueue<FirstJobStep>();
+            var queue = Nebula.JobStepSourceBuilder.BuildKafkaJobQueue<FirstJobStep>(_jobId);
 
             queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", itemToEnqueue), _jobId);
             FirstJobStep item = null;
@@ -49,7 +49,7 @@ namespace Test.JobQueue
         [TestMethod]
         public async Task KafkaJobQueue_Commit_ShouldNotReturnSameObject()
         {
-            var queue = Nebula.GetKafkaJobQueue<FirstJobStep>();
+            var queue = Nebula.JobStepSourceBuilder.BuildKafkaJobQueue<FirstJobStep>(_jobId);
 
             queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 1}), _jobId);
             queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 2}), _jobId);
@@ -66,7 +66,7 @@ namespace Test.JobQueue
         [TestMethod]
         public async Task KafkaJobQueue_GetNextBatch_Enqueue5Get2()
         {
-            var queue = Nebula.GetKafkaJobQueue<FirstJobStep>();
+            var queue = Nebula.JobStepSourceBuilder.BuildKafkaJobQueue<FirstJobStep>(_jobId);
 
             queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 1}), _jobId);
             queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 2}), _jobId);
@@ -83,7 +83,7 @@ namespace Test.JobQueue
         [TestMethod]
         public async Task KafkaJobQueue_EnqueueBatch_Enqueue2Get2()
         {
-            var queue = Nebula.GetKafkaJobQueue<FirstJobStep>();
+            var queue = Nebula.JobStepSourceBuilder.BuildKafkaJobQueue<FirstJobStep>(_jobId);
 
             var steps = new List<KeyValuePair<string, FirstJobStep>>
             {
@@ -102,7 +102,7 @@ namespace Test.JobQueue
         [TestMethod]
         public async Task KafkaJobQueue_Purge_ShouldReturnNull()
         {
-            var queue = Nebula.GetKafkaJobQueue<FirstJobStep>();
+            var queue = Nebula.JobStepSourceBuilder.BuildKafkaJobQueue<FirstJobStep>(_jobId);
 
             var steps = new List<KeyValuePair<string, FirstJobStep>>
             {

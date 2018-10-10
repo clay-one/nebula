@@ -27,7 +27,7 @@ namespace SampleWorker
 
             nebulaContext.StartWorkerService();
 
-            var queue = nebulaContext.GetDelayedJobQueue<SampleJobStep>(QueueType.Delayed);
+            var queue = nebulaContext.JobStepSourceBuilder.BuildDelayedJobQueue<SampleJobStep>();
 
             Console.WriteLine("Service started. Press ENTER to stop.");
             Console.ReadLine();

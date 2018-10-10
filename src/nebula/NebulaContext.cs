@@ -33,7 +33,7 @@ namespace Nebula
         public string RedisConnectionString { get; set; }
 
         public JobStepSourceBuilder JobStepSourceBuilder =>
-            _jobStepSourceBuilder ?? (_jobStepSourceBuilder = new JobStepSourceBuilder());
+            _jobStepSourceBuilder ?? (_jobStepSourceBuilder = ComponentContext.GetComponent<JobStepSourceBuilder>());
 
         public List<KeyValuePair<string, object>> KafkaConfig { get; set; }
 

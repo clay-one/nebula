@@ -1,4 +1,5 @@
-﻿using ComposerCore.Attributes;
+﻿using ComposerCore;
+using ComposerCore.Attributes;
 
 namespace Nebula.Queue
 {
@@ -7,7 +8,7 @@ namespace Nebula.Queue
     public class JobStepSourceBuilder
     {
         [ComponentPlug]
-        public NebulaContext NebulaContext { get; set; }
+        public IComponentContext ComponentContext { get; set; }
 
         public IJobStepSource<TJobStep> BuildJobStepSource<TJobStep>(string queueTypeName, string jobId = null)
             where TJobStep : IJobStep
@@ -42,7 +43,7 @@ namespace Nebula.Queue
 
         private object GetComponent<TJobStep>(string queueTypeName) where TJobStep : IJobStep
         {
-            return NebulaContext.ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>), queueTypeName);
+            return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>), queueTypeName);
         }
     }
 }

@@ -27,7 +27,7 @@ namespace Test.JobQueue
         [TestMethod]
         public async Task DelayedQueue_Any_Add1ItemAndConsume_ShouldBeFalse()
         {
-            var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
+            var queue = Nebula.JobStepSourceBuilder.BuildDelayedJobQueue<FirstJobStep>(_jobId);
 
             await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow, _jobId);
             await queue.GetNext(_jobId);
@@ -38,7 +38,7 @@ namespace Test.JobQueue
         [TestMethod]
         public async Task DelayedQueue_Any_Add2ItemAndConsume1_ShouldBeTrue()
         {
-            var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
+            var queue = Nebula.JobStepSourceBuilder.BuildDelayedJobQueue<FirstJobStep>(_jobId);
 
             await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow, _jobId);
             await queue.Enqueue(new FirstJobStep {Number = 2}, DateTime.UtcNow, _jobId);
@@ -50,9 +50,9 @@ namespace Test.JobQueue
         [TestMethod]
         public async Task DelayedQueue_Purge_Add1ItemAndPurge_ShouldHaveNoMembers()
         {
-            var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
-
             var jobId = Guid.NewGuid().ToString();
+            var queue = Nebula.JobStepSourceBuilder.BuildDelayedJobQueue<FirstJobStep>(jobId);
+            
             await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow, jobId);
             await queue.Purge(jobId);
 
@@ -62,7 +62,7 @@ namespace Test.JobQueue
         [TestMethod]
         public async Task DelayedQueue_GetNext_Add1ItemAndConsume_ShouldBeTheSameAsEnqueuedItem()
         {
-            var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
+            var queue = Nebula.JobStepSourceBuilder.BuildDelayedJobQueue<FirstJobStep>(_jobId);
 
             var enQueuedItem = new FirstJobStep {Number = 1};
             await queue.Enqueue(enQueuedItem, DateTime.UtcNow, _jobId);
@@ -75,7 +75,7 @@ namespace Test.JobQueue
         [TestMethod]
         public async Task DelayedQueue_GetNext_Add2ItemAndConsume_DequeuedItemsShouldNotBeTheSame()
         {
-            var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
+            var queue = Nebula.JobStepSourceBuilder.BuildDelayedJobQueue<FirstJobStep>(_jobId);
 
             await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow, _jobId);
             await queue.Enqueue(new FirstJobStep {Number = 2}, DateTime.UtcNow, _jobId);
@@ -91,7 +91,7 @@ namespace Test.JobQueue
         [TestMethod]
         public async Task DelayedQueue_GetNextBatch_Add5ItemAndConsume2_ShouldReturn2Items()
         {
-            var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
+            var queue = Nebula.JobStepSourceBuilder.BuildDelayedJobQueue<FirstJobStep>(_jobId);
 
             await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow, _jobId);
             await queue.Enqueue(new FirstJobStep {Number = 2}, DateTime.UtcNow, _jobId);
@@ -107,7 +107,7 @@ namespace Test.JobQueue
         [TestMethod]
         public async Task DelayedQueue_EnqueueBatch_Add5ItemAndConsume_ShouldReturn5Items()
         {
-            var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
+            var queue = Nebula.JobStepSourceBuilder.BuildDelayedJobQueue<FirstJobStep>(_jobId);
 
             var time = DateTime.UtcNow;
             var items = new List<FirstJobStep>
@@ -130,7 +130,7 @@ namespace Test.JobQueue
         [TestMethod]
         public async Task DelayedQueue_Add5ItemWithDifferentTimes_ShouldReturn1()
         {
-            var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
+            var queue = Nebula.JobStepSourceBuilder.BuildDelayedJobQueue<FirstJobStep>(_jobId);
 
             var time = DateTime.UtcNow;
             var items = new List<Tuple<FirstJobStep, DateTime>>
@@ -154,7 +154,7 @@ namespace Test.JobQueue
         [TestMethod]
         public async Task DelayedQueue_Add5ItemWithDelay_ShouldReturn1()
         {
-            var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
+            var queue = Nebula.JobStepSourceBuilder.BuildDelayedJobQueue<FirstJobStep>(_jobId);
 
             var now = DateTime.UtcNow;
             var items = new List<Tuple<FirstJobStep, TimeSpan>>
@@ -178,7 +178,7 @@ namespace Test.JobQueue
         [TestMethod]
         public async Task DelayedQueue_Add5ItemWithDelay_ShouldReturn0()
         {
-            var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
+            var queue = Nebula.JobStepSourceBuilder.BuildDelayedJobQueue<FirstJobStep>(_jobId);
 
             var now = DateTime.UtcNow;
             
@@ -202,7 +202,7 @@ namespace Test.JobQueue
         [TestMethod]
         public async Task DelayedQueue_Add1ItemWithDelay_ShouldReturn0()
         {
-            var queue = Nebula.GetDelayedJobQueue<FirstJobStep>(QueueType.Delayed);
+            var queue = Nebula.JobStepSourceBuilder.BuildDelayedJobQueue<FirstJobStep>(_jobId);
 
             var now = DateTime.UtcNow;
 

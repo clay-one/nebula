@@ -1,8 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Nebula;
-using Nebula.Job;
 using Nebula.Queue;
 using Nebula.Storage;
 using Nebula.Storage.Model;
@@ -24,7 +21,7 @@ namespace Test
             Nebula.RegisterJobQueue(typeof(FirstJobQueue<FirstJobStep>), QueueTypes.FirstJobQueue);
 
             var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(
-                String.Empty, "sample-job", nameof(FirstJobStep), new JobConfigurationData
+                string.Empty, "sample-job", nameof(FirstJobStep), new JobConfigurationData
                 {
                     MaxBatchSize = 100,
                     MaxConcurrentBatchesPerWorker = 5,
@@ -35,7 +32,8 @@ namespace Test
 
             var jobData = await jobStore.LoadFromAnyTenant(jobId);
             var jobQueue =
-                Nebula.GetJobQueue<FirstJobStep>(jobData.Configuration.QueueTypeName);
+                Nebula.JobStepSourceBuilder.BuildJobStepSource<FirstJobStep>(jobData.Configuration.QueueTypeName,
+                    jobData.JobId) as IJobQueue<FirstJobStep>;
 
             await jobQueue.Enqueue(new FirstJobStep(), jobData.JobId);
             await jobQueue.PurgeQueueContents(jobData.JobId);

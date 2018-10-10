@@ -161,7 +161,7 @@ namespace Test.JobManagement
                     QueueTypeName = QueueType.InMemory
                 });
 
-            var queue = Nebula.GetJobQueue<FirstJobStep>(QueueType.InMemory);
+            var queue = Nebula.JobStepSourceBuilder.BuildInMemoryJobQueue<FirstJobStep>(jobId);
 
             await jobManager.StartJob(Tenant.Id, jobId);
 
@@ -188,7 +188,7 @@ namespace Test.JobManagement
                     QueueTypeName = QueueType.InMemory
                 });
 
-            var queue = Nebula.GetJobQueue<FirstJobStep>(QueueType.InMemory);
+            var queue = Nebula.JobStepSourceBuilder.BuildInMemoryJobQueue<FirstJobStep>(jobId);
             await queue.Enqueue(new FirstJobStep {Number = 1}, jobId);
 
             await jobManager.StartJob(Tenant.Id, jobId);
