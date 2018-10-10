@@ -22,53 +22,53 @@ namespace Nebula.Queue.Implementation
             _jobId = jobId;
         }
 
-        public async Task<long> GetQueueLength(string jobId = null)
+        public async Task<long> GetQueueLength()
         {
-            return await RedisManager.GetDatabase().ListLengthAsync(GetRedisKey(jobId));
+            return await RedisManager.GetDatabase().ListLengthAsync(GetRedisKey());
         }
 
-        public async Task Enqueue(TItem item, string jobId = null)
+        public async Task Enqueue(TItem item)
         {
-            await RedisManager.GetDatabase().ListLeftPushAsync(GetRedisKey(jobId), item.ToJson());
+            await RedisManager.GetDatabase().ListLeftPushAsync(GetRedisKey(), item.ToJson());
         }
 
-        public async Task EnqueueBatch(IEnumerable<TItem> items, string jobId = null)
+        public async Task EnqueueBatch(IEnumerable<TItem> items)
         {
-            var redisKey = GetRedisKey(jobId);
+            var redisKey = GetRedisKey();
             var redisDb = RedisManager.GetDatabase();
             var tasks = items.Select(item => redisDb.ListLeftPushAsync(redisKey, item.ToJson()));
             await Task.WhenAll(tasks);
         }
 
-        public Task EnsureJobSourceExists(string jobId = null)
+        public Task EnsureJobSourceExists()
         {
             // Redis lists are created upon adding first item, so nothing to do here.
             return Task.CompletedTask;
         }
 
-        public async Task<bool> Any(string jobId = null)
+        public async Task<bool> Any()
         {
-            var queueLength = await RedisManager.GetDatabase().ListLengthAsync(GetRedisKey(jobId));
+            var queueLength = await RedisManager.GetDatabase().ListLengthAsync(GetRedisKey());
             return queueLength > 0;
         }
 
-        public async Task Purge(string jobId = null)
+        public async Task Purge()
         {
-            await RedisManager.GetDatabase().KeyDeleteAsync(GetRedisKey(jobId));
+            await RedisManager.GetDatabase().KeyDeleteAsync(GetRedisKey());
         }
 
-        public async Task<TItem> GetNext(string jobId = null)
+        public async Task<TItem> GetNext()
         {
-            string serialized = await RedisManager.GetDatabase().ListRightPopAsync(GetRedisKey(jobId));
+            string serialized = await RedisManager.GetDatabase().ListRightPopAsync(GetRedisKey());
             return serialized.FromJson<TItem>();
         }
 
-        public async Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize, string jobId = null)
+        public async Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize)
         {
             if (maxBatchSize < 1 || maxBatchSize > 10000)
                 throw new ArgumentException("MaxBatchSize is out of range");
 
-            var redisKey = GetRedisKey(jobId);
+            var redisKey = GetRedisKey();
             var redisDb = RedisManager.GetDatabase();
             var tasks = Enumerable
                 .Range(1, maxBatchSize)
@@ -83,9 +83,9 @@ namespace Nebula.Queue.Implementation
 
         #region Private helper methods
 
-        private string GetRedisKey(string jobId)
+        private string GetRedisKey()
         {
-            return "job_" + (string.IsNullOrEmpty(jobId) ? typeof(TItem).Name : jobId);
+            return "job_" + (string.IsNullOrEmpty(_jobId) ? typeof(TItem).Name : _jobId);
         }
 
         #endregion
@@ -94,22 +94,22 @@ namespace Nebula.Queue.Implementation
 
         public Task EnsureJobQueueExists(string jobId = null)
         {
-            return EnsureJobSourceExists(jobId);
+            return EnsureJobSourceExists();
         }
 
         public Task PurgeQueueContents(string jobId = null)
         {
-            return Purge(jobId);
+            return Purge();
         }
 
         public Task<TItem> Dequeue(string jobId = null)
         {
-            return GetNext(jobId);
+            return GetNext();
         }
 
         public Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)
         {
-            return GetNextBatch(maxBatchSize, jobId);
+            return GetNextBatch(maxBatchSize);
         }
 
         #endregion

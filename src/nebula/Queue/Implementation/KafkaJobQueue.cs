@@ -25,42 +25,42 @@ namespace Nebula.Queue.Implementation
             _jobId = jobId;
         }
 
-        public void Enqueue(KeyValuePair<string, TItem> item, string jobId = null)
+        public void Enqueue(KeyValuePair<string, TItem> item)
         {
-            var topic = GetTopic(jobId);
+            var topic = GetTopic();
 
             var value = item.Value.ToJson();
             _producer.ProduceAsync(topic, null, value);
         }
         
-        public Task EnsureJobSourceExists(string jobId = null)
+        public Task EnsureJobSourceExists()
         {
             throw new NotImplementedException();
         }
 
-        public Task<bool> Any(string jobId = null)
+        public Task<bool> Any()
         {
             throw new NotImplementedException();
         }
 
-        public async Task Purge(string jobId = null)
+        public async Task Purge()
         {
-            _consumer.Subscribe(GetTopic(jobId));
+            _consumer.Subscribe(GetTopic());
 
             var metadata = _consumer.GetMetadata(false);
-            var partitions = metadata.Topics.Single(a => a.Topic == GetTopic(jobId)).Partitions;
+            var partitions = metadata.Topics.Single(a => a.Topic == GetTopic()).Partitions;
 
             foreach (var partition in partitions)
                 _consumer.Assign(new List<TopicPartitionOffset>
                 {
-                    new TopicPartitionOffset(GetTopic(jobId), partition.PartitionId, Offset.End)
+                    new TopicPartitionOffset(GetTopic(), partition.PartitionId, Offset.End)
                 });
             await _consumer.CommitAsync();
         }
 
-        public async Task<TItem> GetNext(string jobId = null)
+        public async Task<TItem> GetNext()
         {
-            _consumer.Subscribe(GetTopic(jobId));
+            _consumer.Subscribe(GetTopic());
 
             _consumer.OnError += ConsumerOnOnError;
             Message<Null, string> message = null;
@@ -82,11 +82,11 @@ namespace Nebula.Queue.Implementation
             //return message.Value.FromJson<TItem>();
         }
 
-        public async Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize, string jobId = null)
+        public async Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize)
         {
             var tasks = Enumerable
                 .Range(1, maxBatchSize)
-                .Select(i => GetNext(jobId));
+                .Select(i => GetNext());
 
             var results = await Task.WhenAll(tasks);
 
@@ -112,9 +112,9 @@ namespace Nebula.Queue.Implementation
         {
         }
 
-        private string GetTopic(string jobId)
+        private string GetTopic()
         {
-            return "job_" + (string.IsNullOrEmpty(jobId) ? typeof(TItem).Name : jobId);
+            return "job_" + (string.IsNullOrEmpty(_jobId) ? typeof(TItem).Name : _jobId);
         }
 
         ~KafkaJobQueue()

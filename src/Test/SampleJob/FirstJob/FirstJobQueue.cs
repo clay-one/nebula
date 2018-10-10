@@ -16,45 +16,45 @@ namespace Test.SampleJob.FirstJob
             _jobId = jobId;
         }
 
-        public Task<long> GetQueueLength(string jobId = null)
+        public Task<long> GetQueueLength()
         {
             return Task.FromResult((long) _queue.Count);
         }
 
-        public Task Enqueue(TItem item, string jobId = null)
+        public Task Enqueue(TItem item)
         {
-            _queue.Add(jobId, item);
+            _queue.Add(_jobId, item);
             return Task.CompletedTask;
         }
 
-        public Task EnqueueBatch(IEnumerable<TItem> items, string jobId = null)
+        public Task EnqueueBatch(IEnumerable<TItem> items)
         {
             throw new NotImplementedException();
         }
         
-        public Task EnsureJobSourceExists(string jobId = null)
+        public Task EnsureJobSourceExists()
         {
             QueueExistenceChecked = true;
             return Task.CompletedTask;
         }
 
-        public Task<bool> Any(string jobId = null)
+        public Task<bool> Any()
         {
             return Task.FromResult((long) _queue.Count > 0);
         }
 
-        public Task Purge(string jobId = null)
+        public Task Purge()
         {
             _queue.Clear();
             return Task.CompletedTask;
         }
 
-        public Task<TItem> GetNext(string jobId = null)
+        public Task<TItem> GetNext()
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize, string jobId = null)
+        public Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize)
         {
             throw new NotImplementedException();
         }
@@ -63,22 +63,22 @@ namespace Test.SampleJob.FirstJob
 
         public Task EnsureJobQueueExists(string jobId = null)
         {
-            return EnsureJobSourceExists(jobId);
+            return EnsureJobSourceExists();
         }
 
         public Task PurgeQueueContents(string jobId = null)
         {
-            return Purge(jobId);
+            return Purge();
         }
 
         public Task<TItem> Dequeue(string jobId = null)
         {
-            return GetNext(jobId);
+            return GetNext();
         }
 
         public Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)
         {
-            return GetNextBatch(maxBatchSize, jobId);
+            return GetNextBatch(maxBatchSize);
         }
 
         #endregion

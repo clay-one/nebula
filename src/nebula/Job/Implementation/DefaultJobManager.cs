@@ -84,7 +84,7 @@ namespace Nebula.Job.Implementation
             if (jobStepSource == null)
                 throw new CompositionException("JobQueue should be registered");
 
-            await jobStepSource.EnsureJobSourceExists(jobId);
+            await jobStepSource.EnsureJobSourceExists();
             
             return jobId;
         }
@@ -155,7 +155,7 @@ namespace Nebula.Job.Implementation
                     
                     var jobStepSource = GetJobQueue(jobData);
                     if (jobStepSource != null)
-                        await jobStepSource.Purge(jobId);
+                        await jobStepSource.Purge();
                     
                     return ApiValidationResult.Ok();
                 }
@@ -243,14 +243,14 @@ namespace Nebula.Job.Implementation
             if (jobStepSource == null)
                 return ApiValidationResult.Failure(ErrorKeys.UnknownInternalServerError);
 
-            await jobStepSource.Purge(jobId);
+            await jobStepSource.Purge();
             return ApiValidationResult.Ok();
         }
 
         public async Task<long> GetQueueLength(string tenantId, string jobId)
         {
             var jobStepSource = GetJobQueue(await JobStore.Load(tenantId, jobId));
-            return !(jobStepSource is IJobQueue jobQueue) ? 0 : await jobQueue.GetQueueLength(jobId);
+            return !(jobStepSource is IJobQueue jobQueue) ? 0 : await jobQueue.GetQueueLength();
         }
 
         #region Private helper methods

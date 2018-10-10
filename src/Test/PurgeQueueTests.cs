@@ -35,8 +35,8 @@ namespace Test
                 Nebula.JobStepSourceBuilder.BuildJobStepSource<FirstJobStep>(jobData.Configuration.QueueTypeName,
                     jobData.JobId) as IJobQueue<FirstJobStep>;
 
-            await jobQueue.Enqueue(new FirstJobStep(), jobData.JobId);
-            await jobQueue.PurgeQueueContents(jobData.JobId);
+            await jobQueue.Enqueue(new FirstJobStep());
+            await jobQueue.PurgeQueueContents();
             var queueLeghnt = await jobQueue.GetQueueLength();
 
             Assert.AreEqual(0, queueLeghnt);

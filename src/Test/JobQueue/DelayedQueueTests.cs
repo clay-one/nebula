@@ -29,10 +29,10 @@ namespace Test.JobQueue
         {
             var queue = Nebula.JobStepSourceBuilder.BuildDelayedJobQueue<FirstJobStep>(_jobId);
 
-            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow, _jobId);
-            await queue.GetNext(_jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow);
+            await queue.GetNext();
 
-            Assert.IsFalse(await queue.Any(_jobId));
+            Assert.IsFalse(await queue.Any());
         }
 
         [TestMethod]
@@ -40,11 +40,11 @@ namespace Test.JobQueue
         {
             var queue = Nebula.JobStepSourceBuilder.BuildDelayedJobQueue<FirstJobStep>(_jobId);
 
-            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow, _jobId);
-            await queue.Enqueue(new FirstJobStep {Number = 2}, DateTime.UtcNow, _jobId);
-            await queue.GetNext(_jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow);
+            await queue.Enqueue(new FirstJobStep {Number = 2}, DateTime.UtcNow);
+            await queue.GetNext();
 
-            Assert.IsTrue(await queue.Any(_jobId));
+            Assert.IsTrue(await queue.Any());
         }
 
         [TestMethod]
@@ -53,10 +53,10 @@ namespace Test.JobQueue
             var jobId = Guid.NewGuid().ToString();
             var queue = Nebula.JobStepSourceBuilder.BuildDelayedJobQueue<FirstJobStep>(jobId);
             
-            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow, jobId);
-            await queue.Purge(jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow);
+            await queue.Purge();
 
-            Assert.IsFalse(await queue.Any(jobId));
+            Assert.IsFalse(await queue.Any());
         }
 
         [TestMethod]
@@ -65,8 +65,8 @@ namespace Test.JobQueue
             var queue = Nebula.JobStepSourceBuilder.BuildDelayedJobQueue<FirstJobStep>(_jobId);
 
             var enQueuedItem = new FirstJobStep {Number = 1};
-            await queue.Enqueue(enQueuedItem, DateTime.UtcNow, _jobId);
-            var dequeuedItem = await queue.GetNext(_jobId);
+            await queue.Enqueue(enQueuedItem, DateTime.UtcNow);
+            var dequeuedItem = await queue.GetNext();
 
             Assert.IsNotNull(dequeuedItem);
             Assert.AreEqual(enQueuedItem.Number, dequeuedItem.Number);
@@ -77,11 +77,11 @@ namespace Test.JobQueue
         {
             var queue = Nebula.JobStepSourceBuilder.BuildDelayedJobQueue<FirstJobStep>(_jobId);
 
-            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow, _jobId);
-            await queue.Enqueue(new FirstJobStep {Number = 2}, DateTime.UtcNow, _jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow);
+            await queue.Enqueue(new FirstJobStep {Number = 2}, DateTime.UtcNow);
 
-            var item1 = await queue.GetNext(_jobId);
-            var item2 = await queue.GetNext(_jobId);
+            var item1 = await queue.GetNext();
+            var item2 = await queue.GetNext();
 
             Assert.IsNotNull(item1);
             Assert.IsNotNull(item2);
@@ -93,12 +93,12 @@ namespace Test.JobQueue
         {
             var queue = Nebula.JobStepSourceBuilder.BuildDelayedJobQueue<FirstJobStep>(_jobId);
 
-            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow, _jobId);
-            await queue.Enqueue(new FirstJobStep {Number = 2}, DateTime.UtcNow, _jobId);
-            await queue.Enqueue(new FirstJobStep {Number = 3}, DateTime.UtcNow, _jobId);
-            await queue.Enqueue(new FirstJobStep {Number = 4}, DateTime.UtcNow, _jobId);
-            await queue.Enqueue(new FirstJobStep {Number = 5}, DateTime.UtcNow, _jobId);
-            var items = await queue.GetNextBatch(2, _jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 1}, DateTime.UtcNow);
+            await queue.Enqueue(new FirstJobStep {Number = 2}, DateTime.UtcNow);
+            await queue.Enqueue(new FirstJobStep {Number = 3}, DateTime.UtcNow);
+            await queue.Enqueue(new FirstJobStep {Number = 4}, DateTime.UtcNow);
+            await queue.Enqueue(new FirstJobStep {Number = 5}, DateTime.UtcNow);
+            var items = await queue.GetNextBatch(2);
 
             Assert.IsNotNull(items);
             Assert.AreEqual(2, items.Count());
@@ -119,9 +119,9 @@ namespace Test.JobQueue
                 new FirstJobStep {Number = 5}
             };
 
-            await queue.EnqueueBatch(items, time, _jobId);
+            await queue.EnqueueBatch(items, time);
 
-            var result = await queue.GetNextBatch(5, _jobId);
+            var result = await queue.GetNextBatch(5);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(5, result.Count());
@@ -142,9 +142,9 @@ namespace Test.JobQueue
                 new Tuple<FirstJobStep, DateTime>(new FirstJobStep {Number = 5}, time.AddHours(1))
             };
 
-            await queue.EnqueueBatch(items, _jobId);
+            await queue.EnqueueBatch(items);
 
-            var result = await queue.GetNextBatch(2, _jobId);
+            var result = await queue.GetNextBatch(2);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(1, result.Count());
@@ -166,9 +166,9 @@ namespace Test.JobQueue
                 new Tuple<FirstJobStep, TimeSpan>(new FirstJobStep {Number = 5}, now.AddHours(1) - now)
             };
 
-            await queue.EnqueueBatch(items, _jobId);
+            await queue.EnqueueBatch(items);
 
-            var result = await queue.GetNextBatch(2, _jobId);
+            var result = await queue.GetNextBatch(2);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(1, result.Count());
@@ -191,9 +191,9 @@ namespace Test.JobQueue
                 new FirstJobStep {Number = 5}
             };
 
-            await queue.EnqueueBatch(items, now.AddHours(1) - now, _jobId);
+            await queue.EnqueueBatch(items, now.AddHours(1) - now);
 
-            var result = await queue.GetNextBatch(2, _jobId);
+            var result = await queue.GetNextBatch(2);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(0, result.Count());
@@ -206,9 +206,9 @@ namespace Test.JobQueue
 
             var now = DateTime.UtcNow;
 
-            await queue.Enqueue(new FirstJobStep { Number = 1 }, now.AddHours(1) - now, _jobId);
+            await queue.Enqueue(new FirstJobStep { Number = 1 }, now.AddHours(1) - now);
 
-            var result = await queue.GetNextBatch(2, _jobId);
+            var result = await queue.GetNextBatch(2);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(0, result.Count());

@@ -7,15 +7,15 @@ namespace Nebula.Queue
     public interface IJobStepSource
     {
         void Initialize(string jobId = null);
-        Task EnsureJobSourceExists(string jobId = null);
-        Task<bool> Any(string jobId = null);
-        Task Purge(string jobId = null);
+        Task EnsureJobSourceExists();
+        Task<bool> Any();
+        Task Purge();
     }
 
     [Contract]
     public interface IJobStepSource<TItem> : IJobStepSource where TItem : IJobStep
     {
-        Task<TItem> GetNext(string jobId = null);
-        Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize, string jobId = null);
+        Task<TItem> GetNext();
+        Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize);
     }
 }

@@ -29,71 +29,71 @@ namespace Nebula.Queue.Implementation
             _jobId = jobId;
         }
 
-        public Task<long> GetQueueLength(string jobId = null)
+        public Task<long> GetQueueLength()
         {
             lock (_lockObject)
             {
-                return Task.FromResult((long) GetQueue(jobId).Count);
+                return Task.FromResult((long) GetQueue().Count);
             }
         }
 
-        public Task Enqueue(TItem item, string jobId = null)
+        public Task Enqueue(TItem item)
         {
             lock (_lockObject)
             {
-                GetQueue(jobId).Enqueue(item);
+                GetQueue().Enqueue(item);
             }
 
             return Task.CompletedTask;
         }
 
-        public Task EnqueueBatch(IEnumerable<TItem> items, string jobId = null)
+        public Task EnqueueBatch(IEnumerable<TItem> items)
         {
             lock (_lockObject)
             {
-                GetQueue(jobId).EnqueueAll(items);
+                GetQueue().EnqueueAll(items);
             }
 
             return Task.CompletedTask;
         }
         
-        public Task EnsureJobSourceExists(string jobId = null)
+        public Task EnsureJobSourceExists()
         {
             return Task.CompletedTask;
         }
 
-        public Task<bool> Any(string jobId = null)
+        public Task<bool> Any()
         {
             lock (_lockObject)
             {
-                var queueLength = (long) GetQueue(jobId).Count;
+                var queueLength = (long) GetQueue().Count;
                 return Task.FromResult(queueLength > 0);
             }
         }
 
-        public Task Purge(string jobId = null)
+        public Task Purge()
         {
             lock (_lockObject)
             {
-                GetQueue(jobId).Clear();
+                GetQueue().Clear();
                 return Task.CompletedTask;
             }
         }
 
-        public Task<TItem> GetNext(string jobId = null)
+        public Task<TItem> GetNext()
         {
             lock (_lockObject)
             {
-                var queue = GetQueue(jobId);
+                var queue = GetQueue();
                 return Task.FromResult(queue.Count > 0 ? queue.Dequeue() : default(TItem));
             }
         }
 
-        public Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize, string jobId = null)
+        public Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize)
         {
             lock (_lockObject)
             {
-                var queue = GetQueue(jobId);
+                var queue = GetQueue();
                 return Task.FromResult(Enumerable.Range(0, maxBatchSize)
                     .Select(_ => queue.Count > 0 ? queue.Dequeue() : default(TItem))
                     .Where(item => item != null)
@@ -102,13 +102,13 @@ namespace Nebula.Queue.Implementation
         }
 
         [SuppressMessage("ReSharper", "InconsistentlySynchronizedField")]
-        private Queue<TItem> GetQueue(string jobId)
+        private Queue<TItem> GetQueue()
         {
-            if (_queueContents.TryGetValue(jobId ?? "", out var queue))
+            if (_queueContents.TryGetValue(_jobId ?? "", out var queue))
                 return queue;
 
             queue = new Queue<TItem>();
-            _queueContents[jobId ?? ""] = queue;
+            _queueContents[_jobId ?? ""] = queue;
 
             return queue;
         }
@@ -117,22 +117,22 @@ namespace Nebula.Queue.Implementation
 
         public Task EnsureJobQueueExists(string jobId = null)
         {
-            return EnsureJobSourceExists(jobId);
+            return EnsureJobSourceExists();
         }
 
         public Task PurgeQueueContents(string jobId = null)
         {
-            return Purge(jobId);
+            return Purge();
         }
 
         public Task<TItem> Dequeue(string jobId = null)
         {
-            return GetNext(jobId);
+            return GetNext();
         }
 
         public Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)
         {
-            return GetNextBatch(maxBatchSize, jobId);
+            return GetNextBatch(maxBatchSize);
         }
 
         #endregion

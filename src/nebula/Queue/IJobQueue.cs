@@ -7,7 +7,7 @@ namespace Nebula.Queue
 {
     public interface IJobQueue
     {
-        Task<long> GetQueueLength(string jobId = null);
+        Task<long> GetQueueLength();
 
         [Obsolete("Use EnsureJobSourceExists instead")]
         Task EnsureJobQueueExists(string jobId = null);
@@ -19,8 +19,8 @@ namespace Nebula.Queue
     [Contract]
     public interface IJobQueue<TItem> : IJobStepSource<TItem>, IJobQueue where TItem : IJobStep
     {
-        Task Enqueue(TItem item, string jobId = null);
-        Task EnqueueBatch(IEnumerable<TItem> items, string jobId = null);
+        Task Enqueue(TItem item);
+        Task EnqueueBatch(IEnumerable<TItem> items);
 
         [Obsolete("Use GetNext Instead")]
         Task<TItem> Dequeue(string jobId = null);

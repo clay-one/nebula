@@ -32,12 +32,12 @@ namespace Test.JobQueue
 
             var queue = Nebula.JobStepSourceBuilder.BuildKafkaJobQueue<FirstJobStep>(_jobId);
 
-            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", itemToEnqueue), _jobId);
+            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", itemToEnqueue));
             FirstJobStep item = null;
 
             for (int i = 0; i < 10; i++)
             {
-                item = await queue.GetNext(_jobId);
+                item = await queue.GetNext();
                 if(item!=null)
                     break;
             }
@@ -51,12 +51,12 @@ namespace Test.JobQueue
         {
             var queue = Nebula.JobStepSourceBuilder.BuildKafkaJobQueue<FirstJobStep>(_jobId);
 
-            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 1}), _jobId);
-            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 2}), _jobId);
-            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 3}), _jobId);
+            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 1}));
+            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 2}));
+            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 3}));
 
-            var item1 = await queue.GetNext(_jobId);
-            var item2 = await queue.GetNext(_jobId);
+            var item1 = await queue.GetNext();
+            var item2 = await queue.GetNext();
 
             Assert.IsNotNull(item1);
             Assert.IsNotNull(item2);
@@ -68,13 +68,13 @@ namespace Test.JobQueue
         {
             var queue = Nebula.JobStepSourceBuilder.BuildKafkaJobQueue<FirstJobStep>(_jobId);
 
-            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 1}), _jobId);
-            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 2}), _jobId);
-            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 3}), _jobId);
-            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 4}), _jobId);
-            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 5}), _jobId);
+            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 1}));
+            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 2}));
+            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 3}));
+            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 4}));
+            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 5}));
 
-            var items = await queue.GetNextBatch(2, _jobId);
+            var items = await queue.GetNextBatch(2);
 
             Assert.IsNotNull(items);
             Assert.AreEqual(2, items.Count());
@@ -91,9 +91,9 @@ namespace Test.JobQueue
                 new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 2})
             };
 
-            queue.EnqueueBatch(steps, _jobId);
+            queue.EnqueueBatch(steps);
 
-            var items = await queue.GetNextBatch(2, _jobId);
+            var items = await queue.GetNextBatch(2);
 
             Assert.IsNotNull(items);
             Assert.AreEqual(2, items.Count());
@@ -110,11 +110,11 @@ namespace Test.JobQueue
                 new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 2})
             };
 
-            queue.EnqueueBatch(steps, _jobId);
+            queue.EnqueueBatch(steps);
 
-            await queue.Purge(_jobId);
+            await queue.Purge();
 
-            var items = await queue.GetNextBatch(2, _jobId);
+            var items = await queue.GetNextBatch(2);
 
             Assert.IsFalse(items.Any());
         }

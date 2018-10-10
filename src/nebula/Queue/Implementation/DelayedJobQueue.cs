@@ -23,34 +23,34 @@ namespace Nebula.Queue.Implementation
             _jobId = jobId;
         }
 
-        public Task EnsureJobSourceExists(string jobId = null)
+        public Task EnsureJobSourceExists()
         {
             return Task.CompletedTask;
         }
 
-        public async Task<bool> Any(string jobId = null)
+        public async Task<bool> Any()
         {
-            var queueLength = await RedisManager.GetDatabase().SortedSetLengthAsync(GetRedisKey(jobId));
+            var queueLength = await RedisManager.GetDatabase().SortedSetLengthAsync(GetRedisKey());
             return queueLength > 0;
         }
 
-        public async Task Purge(string jobId = null)
+        public async Task Purge()
         {
-            await RedisManager.GetDatabase().KeyDeleteAsync(GetRedisKey(jobId));
+            await RedisManager.GetDatabase().KeyDeleteAsync(GetRedisKey());
         }
 
-        public async Task<TItem> GetNext(string jobId = null)
+        public async Task<TItem> GetNext()
         {
             var now = DateTime.UtcNow.Ticks;
-            string serialized = await RedisManager.GetDatabase().SortedSetPopAsync(GetRedisKey(jobId), now);
+            string serialized = await RedisManager.GetDatabase().SortedSetPopAsync(GetRedisKey(), now);
             return serialized.FromJson<TItem>();
         }
 
-        public async Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize, string jobId = null)
+        public async Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize)
         {
             var now = DateTime.UtcNow.Ticks;
 
-            var redisKey = GetRedisKey(jobId);
+            var redisKey = GetRedisKey();
             var redisDb = RedisManager.GetDatabase();
             var tasks = Enumerable
                 .Range(1, maxBatchSize)
@@ -63,25 +63,25 @@ namespace Nebula.Queue.Implementation
                 .Select(s => s.FromJson<TItem>());
         }
 
-        public async Task EnqueueBatch(IEnumerable<Tuple<TItem, DateTime>> items, string jobId = null)
+        public async Task EnqueueBatch(IEnumerable<Tuple<TItem, DateTime>> items)
         {
-            var redisKey = GetRedisKey(jobId);
+            var redisKey = GetRedisKey();
             var redisDb = RedisManager.GetDatabase();
             var tasks = items.Select(item =>
                 redisDb.SortedSetAddAsync(redisKey, item.Item1.ToJson(), item.Item2.Ticks));
             await Task.WhenAll(tasks);
         }
 
-        public async Task EnqueueBatch(IEnumerable<Tuple<TItem, TimeSpan>> items, string jobId = null)
+        public async Task EnqueueBatch(IEnumerable<Tuple<TItem, TimeSpan>> items)
         {
             var now = DateTime.UtcNow;
             var steps = items.Select(item => new Tuple<TItem, DateTime>(item.Item1, now + item.Item2)).ToList();
-            await EnqueueBatch(steps, jobId);
+            await EnqueueBatch(steps);
         }
 
-        private string GetRedisKey(string jobId)
+        private string GetRedisKey()
         {
-            return "job_" + (string.IsNullOrEmpty(jobId) ? typeof(TItem).Name : jobId);
+            return "job_" + (string.IsNullOrEmpty(_jobId) ? typeof(TItem).Name : _jobId);
         }
     }
 }
