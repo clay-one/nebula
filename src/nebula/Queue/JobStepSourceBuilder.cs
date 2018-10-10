@@ -13,32 +13,44 @@ namespace Nebula.Queue
         public IJobStepSource<TJobStep> BuildJobStepSource<TJobStep>(string queueTypeName, string jobId = null)
             where TJobStep : IJobStep
         {
-            return GetComponent<TJobStep>(queueTypeName) as IJobStepSource<TJobStep>;
+            var jobStepSource = GetComponent<TJobStep>(queueTypeName) as IJobStepSource<TJobStep>;
+            jobStepSource?.Initialize(jobId);
+            return jobStepSource;
         }
 
         public IJobQueue<TJobStep> BuildRedisJobQueue<TJobStep>(string jobId = null) where TJobStep : IJobStep
         {
-            return GetComponent<TJobStep>(QueueType.Redis) as IJobQueue<TJobStep>;
+            var jobStepSource = GetComponent<TJobStep>(QueueType.Redis) as IJobQueue<TJobStep>;
+            jobStepSource?.Initialize(jobId);
+            return jobStepSource;
         }
 
         public IJobQueue<TJobStep> BuildInlineJobQueue<TJobStep>(string jobId = null) where TJobStep : IJobStep
         {
-            return GetComponent<TJobStep>(QueueType.Inline) as IJobQueue<TJobStep>;
+            var jobStepSource = GetComponent<TJobStep>(QueueType.Inline) as IJobQueue<TJobStep>;
+            jobStepSource?.Initialize(jobId);
+            return jobStepSource;
         }
 
         public IJobQueue<TJobStep> BuildInMemoryJobQueue<TJobStep>(string jobId = null) where TJobStep : IJobStep
         {
-            return GetComponent<TJobStep>(QueueType.InMemory) as IJobQueue<TJobStep>;
+            var jobStepSource = GetComponent<TJobStep>(QueueType.InMemory) as IJobQueue<TJobStep>;
+            jobStepSource?.Initialize(jobId);
+            return jobStepSource;
         }
 
         public IDelayedJobQueue<TJobStep> BuildDelayedJobQueue<TJobStep>(string jobId = null) where TJobStep : IJobStep
         {
-            return GetComponent<TJobStep>(QueueType.Delayed) as IDelayedJobQueue<TJobStep>;
+            var jobStepSource = GetComponent<TJobStep>(QueueType.Delayed) as IDelayedJobQueue<TJobStep>;
+            jobStepSource?.Initialize(jobId);
+            return jobStepSource;
         }
 
         public IKafkaJobQueue<TJobStep> BuildKafkaJobQueue<TJobStep>(string jobId = null) where TJobStep : IJobStep
         {
-            return GetComponent<TJobStep>(QueueType.Kafka) as IKafkaJobQueue<TJobStep>;
+            var jobStepSource = GetComponent<TJobStep>(QueueType.Kafka) as IKafkaJobQueue<TJobStep>;
+            jobStepSource?.Initialize(jobId);
+            return jobStepSource;
         }
 
         private object GetComponent<TJobStep>(string queueTypeName) where TJobStep : IJobStep

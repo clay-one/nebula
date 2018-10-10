@@ -13,8 +13,15 @@ namespace Nebula.Queue.Implementation
     [Contract]
     public class DelayedJobQueue<TItem> : IDelayedJobQueue<TItem> where TItem : IJobStep
     {
+        private string _jobId;
+
         [ComponentPlug]
         public IRedisConnectionManager RedisManager { get; set; }
+
+        public void Initialize(string jobId = null)
+        {
+            _jobId = jobId;
+        }
 
         public Task EnsureJobSourceExists(string jobId = null)
         {

@@ -7,7 +7,13 @@ namespace SampleJob
 {
     public class SampleJobQueue<TItem> : IJobQueue<SampleJobStep>
     {
+        private string _jobId;
         public bool QueueExistenceChecked { get; set; }
+
+        public void Initialize(string jobId = null)
+        {
+            _jobId = jobId;
+        }
 
         public Task<long> GetQueueLength(string jobId = null)
         {

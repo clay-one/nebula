@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ComposerCore.Attributes;
@@ -12,6 +13,11 @@ namespace Nebula.Queue.Implementation
     {
         [ComponentPlug]
         public IJobProcessor<TItem> Processor { get; set; }
+
+        public void Initialize(string jobId = null)
+        {
+
+        }
 
         public Task<long> GetQueueLength(string jobId = null)
         {
@@ -27,7 +33,7 @@ namespace Nebula.Queue.Implementation
         {
             await Processor.Process(items.ToList());
         }
-
+        
         public Task EnsureJobSourceExists(string jobId = null)
         {
             return Task.CompletedTask;

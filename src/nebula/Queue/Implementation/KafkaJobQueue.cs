@@ -14,10 +14,16 @@ namespace Nebula.Queue.Implementation
     public class KafkaJobQueue<TItem> : IKafkaJobQueue<TItem> where TItem : IJobStep
     {
         private Consumer<Null, string> _consumer;
+        private string _jobId;
         private Producer<Null, string> _producer;
 
         [ComponentPlug]
         public NebulaContext NebulaContext { get; set; }
+
+        public void Initialize(string jobId = null)
+        {
+            _jobId = jobId;
+        }
 
         public void Enqueue(KeyValuePair<string, TItem> item, string jobId = null)
         {
@@ -26,7 +32,7 @@ namespace Nebula.Queue.Implementation
             var value = item.Value.ToJson();
             _producer.ProduceAsync(topic, null, value);
         }
-
+        
         public Task EnsureJobSourceExists(string jobId = null)
         {
             throw new NotImplementedException();

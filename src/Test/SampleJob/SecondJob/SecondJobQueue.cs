@@ -7,7 +7,13 @@ namespace Test.SampleJob.SecondJob
 {
     public class SecondJobQueue<TItem> : IJobQueue<TItem> where TItem : IJobStep
     {
+        private string _jobId;
         public bool QueueExistenceChecked { get; set; }
+
+        public void Initialize(string jobId = null)
+        {
+            _jobId = jobId;
+        }
 
         public Task<long> GetQueueLength(string jobId = null)
         {
@@ -23,7 +29,7 @@ namespace Test.SampleJob.SecondJob
         {
             throw new NotImplementedException();
         }
-
+        
         public Task EnsureJobSourceExists(string jobId = null)
         {
             QueueExistenceChecked = true;

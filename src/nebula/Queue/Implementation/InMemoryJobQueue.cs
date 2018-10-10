@@ -16,11 +16,17 @@ namespace Nebula.Queue.Implementation
     {
         private readonly object _lockObject;
         private readonly Dictionary<string, Queue<TItem>> _queueContents;
+        private string _jobId;
 
         public InMemoryJobQueue()
         {
             _queueContents = new Dictionary<string, Queue<TItem>>();
             _lockObject = new object();
+        }
+
+        public void Initialize(string jobId = null)
+        {
+            _jobId = jobId;
         }
 
         public Task<long> GetQueueLength(string jobId = null)
@@ -50,7 +56,7 @@ namespace Nebula.Queue.Implementation
 
             return Task.CompletedTask;
         }
-
+        
         public Task EnsureJobSourceExists(string jobId = null)
         {
             return Task.CompletedTask;

@@ -9,6 +9,10 @@ namespace Nebula.Queue.Implementation
     [IgnoredOnAssemblyRegistration]
     public class NullJobQueue<TItem> : IJobQueue<TItem> where TItem : IJobStep
     {
+        public void Initialize(string jobId = null)
+        {
+        }
+
         public Task<long> GetQueueLength(string jobId = null)
         {
             return Task.FromResult(0L);

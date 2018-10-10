@@ -6,6 +6,7 @@ namespace Nebula.Queue
 {
     public interface IJobStepSource
     {
+        void Initialize(string jobId = null);
         Task EnsureJobSourceExists(string jobId = null);
         Task<bool> Any(string jobId = null);
         Task Purge(string jobId = null);
