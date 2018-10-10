@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -28,6 +29,8 @@ namespace Nebula
 
         public string MongoConnectionString { get; set; }
         public string RedisConnectionString { get; set; }
+
+        public List<KeyValuePair<string, object>> KafkaConfig { get; set; }
         
         public void RegisterJobProcessor(Type processor, Type stepType)
         {
@@ -61,6 +64,11 @@ namespace Nebula
         public IDelayedJobQueue<TJobStep> GetDelayedJobQueue<TJobStep>(string queueTypeName) where TJobStep : IJobStep
         {
             return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>), queueTypeName) as IDelayedJobQueue<TJobStep>;
+        }
+
+        public IKafkaJobQueue<TJobStep> GetKafkaJobQueue<TJobStep>() where TJobStep : IJobStep
+        {
+            return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>), QueueType.Kafka) as IKafkaJobQueue<TJobStep>;
         }
 
         public IJobManager GetJobManager()
