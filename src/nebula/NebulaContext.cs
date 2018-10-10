@@ -19,6 +19,8 @@ namespace Nebula
     [Contract]
     public class NebulaContext
     {
+        private JobStepSourceBuilder _jobStepSourceBuilder;
+
         public NebulaContext()
         {
             if (ComponentContext == null)
@@ -30,8 +32,11 @@ namespace Nebula
         public string MongoConnectionString { get; set; }
         public string RedisConnectionString { get; set; }
 
+        public JobStepSourceBuilder JobStepSourceBuilder =>
+            _jobStepSourceBuilder ?? (_jobStepSourceBuilder = new JobStepSourceBuilder());
+
         public List<KeyValuePair<string, object>> KafkaConfig { get; set; }
-        
+
         public void RegisterJobProcessor(Type processor, Type stepType)
         {
             var contract = typeof(IJobProcessor<>).MakeGenericType(stepType);
@@ -56,20 +61,27 @@ namespace Nebula
             ComponentContext.Register(typeof(IJobStepSource<>), queueTypeName, jobQueue);
         }
 
+        [Obsolete]
         public IJobQueue<TJobStep> GetJobQueue<TJobStep>(string queueTypeName) where TJobStep : IJobStep
         {
-            return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>), queueTypeName) as IJobQueue<TJobStep>;
+            return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>),
+                queueTypeName) as IJobQueue<TJobStep>;
         }
 
+        [Obsolete]
         public IDelayedJobQueue<TJobStep> GetDelayedJobQueue<TJobStep>(string queueTypeName) where TJobStep : IJobStep
         {
-            return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>), queueTypeName) as IDelayedJobQueue<TJobStep>;
+            return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>), queueTypeName) as
+                IDelayedJobQueue<TJobStep>;
         }
 
+        [Obsolete]
         public IKafkaJobQueue<TJobStep> GetKafkaJobQueue<TJobStep>() where TJobStep : IJobStep
         {
-            return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>), QueueType.Kafka) as IKafkaJobQueue<TJobStep>;
+            return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>), QueueType.Kafka) as
+                IKafkaJobQueue<TJobStep>;
         }
+
 
         public IJobManager GetJobManager()
         {
