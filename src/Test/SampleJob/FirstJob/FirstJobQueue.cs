@@ -10,10 +10,12 @@ namespace Test.SampleJob.FirstJob
         private readonly Dictionary<string, TItem> _queue = new Dictionary<string, TItem>();
         private string _jobId;
         public bool QueueExistenceChecked { get; set; }
+        public int InitializationCount { get; set; }
 
         public void Initialize(string jobId = null)
         {
             _jobId = jobId;
+            InitializationCount++;
         }
 
         public Task<long> GetQueueLength()

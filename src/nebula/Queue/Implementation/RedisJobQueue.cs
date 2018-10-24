@@ -24,19 +24,18 @@ namespace Nebula.Queue.Implementation
 
         public async Task<long> GetQueueLength()
         {
-            return await RedisManager.GetDatabase().ListLengthAsync(GetRedisKey());
+            return await RedisManager.GetDatabase().ListLengthAsync(_jobId);
         }
 
         public async Task Enqueue(TItem item)
         {
-            await RedisManager.GetDatabase().ListLeftPushAsync(GetRedisKey(), item.ToJson());
+            await RedisManager.GetDatabase().ListLeftPushAsync(_jobId, item.ToJson());
         }
 
         public async Task EnqueueBatch(IEnumerable<TItem> items)
         {
-            var redisKey = GetRedisKey();
             var redisDb = RedisManager.GetDatabase();
-            var tasks = items.Select(item => redisDb.ListLeftPushAsync(redisKey, item.ToJson()));
+            var tasks = items.Select(item => redisDb.ListLeftPushAsync(_jobId, item.ToJson()));
             await Task.WhenAll(tasks);
         }
 
@@ -48,18 +47,18 @@ namespace Nebula.Queue.Implementation
 
         public async Task<bool> Any()
         {
-            var queueLength = await RedisManager.GetDatabase().ListLengthAsync(GetRedisKey());
+            var queueLength = await RedisManager.GetDatabase().ListLengthAsync(_jobId);
             return queueLength > 0;
         }
 
         public async Task Purge()
         {
-            await RedisManager.GetDatabase().KeyDeleteAsync(GetRedisKey());
+            await RedisManager.GetDatabase().KeyDeleteAsync(_jobId);
         }
 
         public async Task<TItem> GetNext()
         {
-            string serialized = await RedisManager.GetDatabase().ListRightPopAsync(GetRedisKey());
+            string serialized = await RedisManager.GetDatabase().ListRightPopAsync(_jobId);
             return serialized.FromJson<TItem>();
         }
 
@@ -68,11 +67,10 @@ namespace Nebula.Queue.Implementation
             if (maxBatchSize < 1 || maxBatchSize > 10000)
                 throw new ArgumentException("MaxBatchSize is out of range");
 
-            var redisKey = GetRedisKey();
             var redisDb = RedisManager.GetDatabase();
             var tasks = Enumerable
                 .Range(1, maxBatchSize)
-                .Select(i => redisDb.ListRightPopAsync(redisKey));
+                .Select(i => redisDb.ListRightPopAsync(_jobId));
 
             var results = await Task.WhenAll(tasks);
             return results
@@ -80,14 +78,5 @@ namespace Nebula.Queue.Implementation
                 .Where(s => !string.IsNullOrWhiteSpace(s))
                 .Select(s => s.FromJson<TItem>());
         }
-
-        #region Private helper methods
-
-        private string GetRedisKey()
-        {
-            return "job_" + (string.IsNullOrEmpty(_jobId) ? typeof(TItem).Name : _jobId);
-        }
-
-        #endregion
     }
 }
