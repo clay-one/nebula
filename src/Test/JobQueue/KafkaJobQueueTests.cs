@@ -9,6 +9,7 @@ using Test.SampleJob.FirstJob;
 
 namespace Test.JobQueue
 {
+    [TestClass]
     public class KafkaJobQueueTests : TestClassBase
     {
         private readonly string _jobId = Guid.NewGuid().ToString();
@@ -19,7 +20,10 @@ namespace Test.JobQueue
             {
                 new KeyValuePair<string, object>("bootstrap.servers", "172.30.3.59:9101"),
                 new KeyValuePair<string, object>("group.id", "testGroup"),
-                new KeyValuePair<string, object>("auto.offset.reset", "earliest")
+                new KeyValuePair<string, object>("auto.offset.reset", "earliest"),
+                new KeyValuePair<string, object>("queue.buffering.max.ms", 1),
+                new KeyValuePair<string, object>("batch.num.messages", 1),
+                new KeyValuePair<string, object>("fetch.wait.max.ms", 5000)
             };
 
             Nebula.RegisterJobQueue(typeof(KafkaJobQueue<>), QueueType.Kafka);
@@ -32,13 +36,13 @@ namespace Test.JobQueue
 
             var queue = Nebula.JobStepSourceBuilder.BuildKafkaJobQueue<FirstJobStep>(_jobId);
 
-            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", itemToEnqueue));
+            queue.Enqueue(itemToEnqueue);
             FirstJobStep item = null;
 
-            for (int i = 0; i < 10; i++)
+            for (var i = 0; i < 600; i++)
             {
                 item = await queue.GetNext();
-                if(item!=null)
+                if (item != null)
                     break;
             }
 
@@ -51,12 +55,25 @@ namespace Test.JobQueue
         {
             var queue = Nebula.JobStepSourceBuilder.BuildKafkaJobQueue<FirstJobStep>(_jobId);
 
-            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 1}));
-            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 2}));
-            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 3}));
+            queue.Enqueue(new FirstJobStep {Number = 1});
+            queue.Enqueue(new FirstJobStep {Number = 2});
+            queue.Enqueue(new FirstJobStep {Number = 3});
 
-            var item1 = await queue.GetNext();
-            var item2 = await queue.GetNext();
+            FirstJobStep item1 = null, item2 = null;
+
+            for (var i = 0; i < 600; i++)
+            {
+                item1 = await queue.GetNext();
+                if (item1 != null)
+                    break;
+            }
+
+            for (var i = 0; i < 600; i++)
+            {
+                item2 = await queue.GetNext();
+                if (item2 != null)
+                    break;
+            }
 
             Assert.IsNotNull(item1);
             Assert.IsNotNull(item2);
@@ -68,13 +85,28 @@ namespace Test.JobQueue
         {
             var queue = Nebula.JobStepSourceBuilder.BuildKafkaJobQueue<FirstJobStep>(_jobId);
 
-            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 1}));
-            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 2}));
-            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 3}));
-            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 4}));
-            queue.Enqueue(new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 5}));
+            queue.Enqueue(new FirstJobStep {Number = 1});
+            queue.Enqueue(new FirstJobStep {Number = 2});
+            queue.Enqueue(new FirstJobStep {Number = 3});
+            queue.Enqueue(new FirstJobStep {Number = 4});
+            queue.Enqueue(new FirstJobStep {Number = 5});
 
-            var items = await queue.GetNextBatch(2);
+            for (var i = 0; i < 600; i++)
+            {
+                var item1 = await queue.GetNext();
+                if (item1 != null)
+                    break;
+            }
+
+            List<FirstJobStep> items = null;
+
+            for (var i = 0; i < 600; i++)
+            {
+                items = (await queue.GetNextBatch(2)).ToList();
+
+                if (items.Any())
+                    break;
+            }
 
             Assert.IsNotNull(items);
             Assert.AreEqual(2, items.Count());
@@ -85,15 +117,32 @@ namespace Test.JobQueue
         {
             var queue = Nebula.JobStepSourceBuilder.BuildKafkaJobQueue<FirstJobStep>(_jobId);
 
-            var steps = new List<KeyValuePair<string, FirstJobStep>>
+            var steps = new List<FirstJobStep>
             {
-                new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 1}),
-                new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 2})
+                new FirstJobStep {Number = 1},
+                new FirstJobStep {Number = 2},
+                new FirstJobStep {Number = 3},
+                new FirstJobStep {Number = 4},
+                new FirstJobStep {Number = 5}
             };
 
             queue.EnqueueBatch(steps);
 
-            var items = await queue.GetNextBatch(2);
+            for (var i = 0; i < 600; i++)
+            {
+                var item1 = await queue.GetNext();
+                if (item1 != null)
+                    break;
+            }
+
+            List<FirstJobStep> items = null;
+            for (var i = 0; i < 600; i++)
+            {
+                items = (await queue.GetNextBatch(2)).ToList();
+
+                if (items.Any())
+                    break;
+            }
 
             Assert.IsNotNull(items);
             Assert.AreEqual(2, items.Count());
@@ -104,19 +153,87 @@ namespace Test.JobQueue
         {
             var queue = Nebula.JobStepSourceBuilder.BuildKafkaJobQueue<FirstJobStep>(_jobId);
 
-            var steps = new List<KeyValuePair<string, FirstJobStep>>
+            var steps = new List<FirstJobStep>
             {
-                new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 1}),
-                new KeyValuePair<string, FirstJobStep>("sampleKey", new FirstJobStep {Number = 2})
+                new FirstJobStep {Number = 1},
+                new FirstJobStep {Number = 2}
             };
 
             queue.EnqueueBatch(steps);
 
+            for (var i = 0; i < 600; i++)
+                if ((await queue.GetNextBatch(2)).Any())
+                    break;
+
             await queue.Purge();
 
-            var items = await queue.GetNextBatch(2);
+            var items = new List<FirstJobStep>();
+
+            for (var i = 0; i < 600; i++)
+            {
+                items = (List<FirstJobStep>) await queue.GetNextBatch(2);
+
+                if (items.Any())
+                    break;
+            }
 
             Assert.IsFalse(items.Any());
+        }
+
+        [TestMethod]
+        public async Task KafkaJobQueue_Any_EnqueueConsumeShouldReturnTrue()
+        {
+            var queue = Nebula.JobStepSourceBuilder.BuildKafkaJobQueue<FirstJobStep>(_jobId);
+
+            var steps = new List<FirstJobStep>
+            {
+                new FirstJobStep {Number = 1},
+                new FirstJobStep {Number = 2},
+                new FirstJobStep {Number = 3},
+                new FirstJobStep {Number = 4},
+                new FirstJobStep {Number = 5}
+            };
+
+            queue.EnqueueBatch(steps);
+
+            for (var i = 0; i < 600; i++)
+                if ((await queue.GetNextBatch(2)).Any())
+                    break;
+
+            var queueHasItems = await queue.Any();
+
+            Assert.IsTrue(queueHasItems);
+        }
+
+        [TestMethod]
+        public async Task KafkaJobQueue_Any_EnqueueShouldReturnTrue()
+        {
+            var queue = Nebula.JobStepSourceBuilder.BuildKafkaJobQueue<FirstJobStep>(_jobId);
+
+            var steps = new List<FirstJobStep>
+            {
+                new FirstJobStep {Number = 1},
+                new FirstJobStep {Number = 2},
+                new FirstJobStep {Number = 3},
+                new FirstJobStep {Number = 4},
+                new FirstJobStep {Number = 5}
+            };
+
+            queue.EnqueueBatch(steps);
+
+            var queueHasItems = await queue.Any();
+
+            Assert.IsTrue(queueHasItems);
+        }
+
+        [TestMethod]
+        public async Task KafkaJobQueue_Any_EmptyQueueReturnFalse()
+        {
+            var queue = Nebula.JobStepSourceBuilder.BuildKafkaJobQueue<FirstJobStep>(_jobId);
+
+            var queueHasItems = await queue.Any();
+
+            Assert.IsFalse(queueHasItems);
         }
     }
 }

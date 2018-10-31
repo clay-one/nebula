@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
-using ComposerCore.Attributes;
+﻿using ComposerCore.Attributes;
 
 namespace Nebula.Queue
 {
     [Contract]
     public interface IKafkaJobQueue<TItem> : IJobStepSource<TItem> where TItem : IJobStep
     {
-        void Enqueue(KeyValuePair<string, TItem> item);
+        void Enqueue(TItem item);
     }
 }

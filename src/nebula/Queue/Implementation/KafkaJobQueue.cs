@@ -6,80 +6,82 @@ using System.Threading.Tasks;
 using ComposerCore.Attributes;
 using Confluent.Kafka;
 using Confluent.Kafka.Serialization;
+using log4net;
 using ServiceStack;
 
 namespace Nebula.Queue.Implementation
 {
     [Component]
+    [ComponentCache(null)]
     public class KafkaJobQueue<TItem> : IKafkaJobQueue<TItem> where TItem : IJobStep
     {
         private Consumer<Null, string> _consumer;
-        private string _jobId;
         private Producer<Null, string> _producer;
+        private string _topic;
+
+        protected static readonly ILog Log =
+            LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         [ComponentPlug]
         public NebulaContext NebulaContext { get; set; }
 
-        public void Initialize(string jobId = null)
+        public void Initialize(string jobId )
         {
-            _jobId = jobId;
-        }
+            _topic = jobId;
 
-        public void Enqueue(KeyValuePair<string, TItem> item)
-        {
-            var topic = GetTopic();
+            if(_consumer!=null && _producer!=null)
+                return;
 
-            var value = item.Value.ToJson();
-            _producer.ProduceAsync(topic, null, value);
+             _producer = new Producer<Null, string>(NebulaContext.KafkaConfig, null,
+                new StringSerializer(Encoding.UTF8));
+            _consumer =
+                new Consumer<Null, string>(NebulaContext.KafkaConfig, null, new StringDeserializer(Encoding.UTF8));
+            _consumer.Subscribe(_topic);
+
+            _producer.OnError += ProducerOnOnError;
+            _consumer.OnError += ConsumerOnOnError;
+            _consumer.OnConsumeError += _consumer_OnConsumeError;
         }
         
-        public Task EnsureJobSourceExists()
+        public void Enqueue(TItem item)
         {
-            throw new NotImplementedException();
+            var value = item.ToJson();
+            _producer.ProduceAsync(_topic, null, value, 0).GetAwaiter().GetResult();
         }
 
-        public Task<bool> Any()
+        public Task EnsureJobSourceExists()
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
+        }
+
+        public async Task<bool> Any()
+        {
+            var positions = _consumer.Position(new List<TopicPartition> {new TopicPartition(_topic, 0)});
+
+            return positions[0].Offset.Value > 0;
         }
 
         public async Task Purge()
         {
-            _consumer.Subscribe(GetTopic());
-
             var metadata = _consumer.GetMetadata(false);
-            var partitions = metadata.Topics.Single(a => a.Topic == GetTopic()).Partitions;
+            var partitions = metadata.Topics.Single(a => a.Topic == _topic).Partitions;
 
             foreach (var partition in partitions)
                 _consumer.Assign(new List<TopicPartitionOffset>
                 {
-                    new TopicPartitionOffset(GetTopic(), partition.PartitionId, Offset.End)
+                    new TopicPartitionOffset(_topic, partition.PartitionId, Offset.End)
                 });
             await _consumer.CommitAsync();
         }
 
         public async Task<TItem> GetNext()
         {
-            _consumer.Subscribe(GetTopic());
-
-            _consumer.OnError += ConsumerOnOnError;
             Message<Null, string> message = null;
 
             if (!_consumer.Consume(out message, TimeSpan.FromMilliseconds(100)))
                 return default(TItem);
 
-            await _consumer.CommitAsync();
             return message.Value.FromJson<TItem>();
-
-            //for (var i = 0; i < 20; i++)
-            //    if (_consumer.Consume(out message, TimeSpan.FromMilliseconds(100)))
-            //        break;
-
-            //if (message == null)
-            //    return default(TItem);
-
-            //await _consumer.CommitAsync();
-            //return message.Value.FromJson<TItem>();
         }
 
         public async Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize)
@@ -93,28 +95,19 @@ namespace Nebula.Queue.Implementation
             return results.Where(a => a != null).ToList();
         }
 
-        [OnCompositionComplete]
-        public void OnCompositionComplete()
-        {
-            _producer = new Producer<Null, string>(NebulaContext.KafkaConfig, null,
-                new StringSerializer(Encoding.UTF8));
-            _consumer =
-                new Consumer<Null, string>(NebulaContext.KafkaConfig, null, new StringDeserializer(Encoding.UTF8));
-
-            _producer.OnError += ProducerOnOnError;
-        }
-
         private void ProducerOnOnError(object sender, Error error)
         {
+            Log.Error($"Kafka producer could not produce due to error: {error}");
         }
 
         private void ConsumerOnOnError(object sender, Error error)
         {
+            Log.Error($"Kafka cunsumer could not consume due to error: {error}");
         }
 
-        private string GetTopic()
+        private void _consumer_OnConsumeError(object sender, Message e)
         {
-            return "job_" + (string.IsNullOrEmpty(_jobId) ? typeof(TItem).Name : _jobId);
+            Log.Error($"Kafka cunsumer could not consume due to error: {e}");
         }
 
         ~KafkaJobQueue()

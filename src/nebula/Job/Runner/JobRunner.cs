@@ -61,6 +61,9 @@ namespace Nebula.Job.Runner
         [ComponentPlug]
         public IBackgroundTaskScheduler BackgroundTaskScheduler { get; set; }
 
+        [ComponentPlug]
+        public JobStepSourceBuilder JobStepSourceBuilder { get; set; }
+
         [CompositionConstructor]
         public JobRunner(IComposer composer, IJobProcessor<TJobStep> processor, IJobStore jobStore,
             IJobRunnerManager jobRunnerManager, JobStatisticsCalculator statistics, IJobNotification jobNotification)
@@ -153,8 +156,8 @@ namespace Nebula.Job.Runner
         {
             if (_jobData.Configuration.IsIndefinite)
                 return false;
-
-            var jobStepSource = _composer.GetComponent<IJobStepSource<TJobStep>>(_jobData.Configuration.QueueTypeName);
+            
+            var jobStepSource = JobStepSourceBuilder.BuildJobStepSource<TJobStep>(_jobData.Configuration.QueueTypeName, _jobData.JobId);
 
             if (await jobStepSource.Any())
                 return false;
@@ -416,9 +419,9 @@ namespace Nebula.Job.Runner
                 _statistics.ReportDequeueAttempt();
 
                 var nextBatchSize = Math.Min(throttledBatchSize, _jobData.Configuration.MaxBatchSize);
-
-                var queue = _composer.GetComponent<IJobStepSource<TJobStep>>(_jobData.Configuration.QueueTypeName);
-
+                
+                var queue = JobStepSourceBuilder.BuildJobStepSource<TJobStep>(_jobData.Configuration.QueueTypeName, _jobData.JobId);
+                 
                 steps = (await queue.GetNextBatch(nextBatchSize)).SafeToList();
                 if (steps == null || steps.Count <= 0)
                 {

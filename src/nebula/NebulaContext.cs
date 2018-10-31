@@ -61,28 +61,6 @@ namespace Nebula
             ComponentContext.Register(typeof(IJobStepSource<>), queueTypeName, jobQueue);
         }
 
-        [Obsolete]
-        public IJobQueue<TJobStep> GetJobQueue<TJobStep>(string queueTypeName) where TJobStep : IJobStep
-        {
-            return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>),
-                queueTypeName) as IJobQueue<TJobStep>;
-        }
-
-        [Obsolete]
-        public IDelayedJobQueue<TJobStep> GetDelayedJobQueue<TJobStep>(string queueTypeName) where TJobStep : IJobStep
-        {
-            return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>), queueTypeName) as
-                IDelayedJobQueue<TJobStep>;
-        }
-
-        [Obsolete]
-        public IKafkaJobQueue<TJobStep> GetKafkaJobQueue<TJobStep>() where TJobStep : IJobStep
-        {
-            return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>), QueueType.Kafka) as
-                IKafkaJobQueue<TJobStep>;
-        }
-
-
         public IJobManager GetJobManager()
         {
             return ComponentContext.GetComponent<IJobManager>();
