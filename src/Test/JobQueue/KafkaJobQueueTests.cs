@@ -10,6 +10,7 @@ using Test.SampleJob.FirstJob;
 namespace Test.JobQueue
 {
     [TestClass]
+    [TestCategory("localTest")]
     public class KafkaJobQueueTests : TestClassBase
     {
         private readonly string _jobId = Guid.NewGuid().ToString();
