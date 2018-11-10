@@ -63,15 +63,15 @@ namespace Test.JobManagement
             var jobId = await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData {QueueTypeName = QueueType.InMemory});
 
-            var queue = Nebula.GetJobQueue<FirstJobStep>(QueueType.InMemory);
-            await queue.Enqueue(new FirstJobStep {Number = 1}, jobId);
+            var queue = Nebula.JobStepSourceBuilder.BuildInMemoryJobQueue<FirstJobStep>(jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 1});
 
-            var initialLength = await queue.GetQueueLength(jobId);
+            var initialLength = await queue.GetQueueLength();
 
             await jobManager.StartJob(Tenant.Id, jobId);
 
 
-            var processedLength = await queue.GetQueueLength(jobId);
+            var processedLength = await queue.GetQueueLength();
 
             var jobRunnerManager = Nebula.ComponentContext.GetComponent<IJobRunnerManager>();
 

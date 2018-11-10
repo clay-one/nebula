@@ -12,60 +12,65 @@ namespace Nebula.Queue.Implementation
     [IgnoredOnAssemblyRegistration]
     public class RedisJobQueue<TItem> : IJobQueue<TItem> where TItem : IJobStep
     {
+        private string _jobId;
+
         [ComponentPlug]
         public IRedisConnectionManager RedisManager { get; set; }
 
-        public async Task<long> GetQueueLength(string jobId = null)
+        public void Initialize(string jobId = null)
         {
-            return await RedisManager.GetDatabase().ListLengthAsync(GetRedisKey(jobId));
+            _jobId = jobId;
         }
 
-        public async Task Enqueue(TItem item, string jobId = null)
+        public async Task<long> GetQueueLength()
         {
-            await RedisManager.GetDatabase().ListLeftPushAsync(GetRedisKey(jobId), item.ToJson());
+            return await RedisManager.GetDatabase().ListLengthAsync(_jobId);
         }
 
-        public async Task EnqueueBatch(IEnumerable<TItem> items, string jobId = null)
+        public async Task Enqueue(TItem item)
         {
-            var redisKey = GetRedisKey(jobId);
+            await RedisManager.GetDatabase().ListLeftPushAsync(_jobId, item.ToJson());
+        }
+
+        public async Task EnqueueBatch(IEnumerable<TItem> items)
+        {
             var redisDb = RedisManager.GetDatabase();
-            var tasks = items.Select(item => redisDb.ListLeftPushAsync(redisKey, item.ToJson()));
+            var tasks = items.Select(item => redisDb.ListLeftPushAsync(_jobId, item.ToJson()));
             await Task.WhenAll(tasks);
         }
 
-        public Task EnsureJobSourceExists(string jobId = null)
+        public Task EnsureJobSourceExists()
         {
             // Redis lists are created upon adding first item, so nothing to do here.
             return Task.CompletedTask;
         }
 
-        public async Task<bool> Any(string jobId = null)
+        public async Task<bool> Any()
         {
-            var queueLength = await RedisManager.GetDatabase().ListLengthAsync(GetRedisKey(jobId));
+            var queueLength = await RedisManager.GetDatabase().ListLengthAsync(_jobId);
             return queueLength > 0;
         }
 
-        public async Task Purge(string jobId = null)
+        public async Task Purge()
         {
-            await RedisManager.GetDatabase().KeyDeleteAsync(GetRedisKey(jobId));
+            await RedisManager.GetDatabase().KeyDeleteAsync(_jobId);
         }
 
-        public async Task<TItem> GetNext(string jobId = null)
+        public async Task<TItem> GetNext()
         {
-            string serialized = await RedisManager.GetDatabase().ListRightPopAsync(GetRedisKey(jobId));
+            string serialized = await RedisManager.GetDatabase().ListRightPopAsync(_jobId);
             return serialized.FromJson<TItem>();
         }
 
-        public async Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize, string jobId = null)
+        public async Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize)
         {
             if (maxBatchSize < 1 || maxBatchSize > 10000)
                 throw new ArgumentException("MaxBatchSize is out of range");
 
-            var redisKey = GetRedisKey(jobId);
             var redisDb = RedisManager.GetDatabase();
             var tasks = Enumerable
                 .Range(1, maxBatchSize)
-                .Select(i => redisDb.ListRightPopAsync(redisKey));
+                .Select(i => redisDb.ListRightPopAsync(_jobId));
 
             var results = await Task.WhenAll(tasks);
             return results
@@ -73,38 +78,5 @@ namespace Nebula.Queue.Implementation
                 .Where(s => !string.IsNullOrWhiteSpace(s))
                 .Select(s => s.FromJson<TItem>());
         }
-
-        #region Private helper methods
-
-        private string GetRedisKey(string jobId)
-        {
-            return "job_" + (string.IsNullOrEmpty(jobId) ? typeof(TItem).Name : jobId);
-        }
-
-        #endregion
-
-        #region Obsolete members
-
-        public Task EnsureJobQueueExists(string jobId = null)
-        {
-            return EnsureJobSourceExists(jobId);
-        }
-
-        public Task PurgeQueueContents(string jobId = null)
-        {
-            return Purge(jobId);
-        }
-
-        public Task<TItem> Dequeue(string jobId = null)
-        {
-            return GetNext(jobId);
-        }
-
-        public Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)
-        {
-            return GetNextBatch(maxBatchSize, jobId);
-        }
-
-        #endregion
     }
 }

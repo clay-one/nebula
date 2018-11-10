@@ -80,3 +80,11 @@ deploy:
   auth_token:
     secure: PR2N4DNpyemBn+f32B5SXr4e2w19JxwiRq6P9RzHQZ7bsR5UH76/ewi9fYfDloCS
   force_update: true
+test:
+  assemblies:
+    only:
+      - Test.dll
+
+  categories:
+    except:
+      - localTest

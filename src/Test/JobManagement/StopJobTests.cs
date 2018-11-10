@@ -161,15 +161,15 @@ namespace Test.JobManagement
                     QueueTypeName = QueueType.InMemory
                 });
 
-            var queue = Nebula.GetJobQueue<FirstJobStep>(QueueType.InMemory);
+            var queue = Nebula.JobStepSourceBuilder.BuildInMemoryJobQueue<FirstJobStep>(jobId);
 
             await jobManager.StartJob(Tenant.Id, jobId);
 
-            await queue.Enqueue(new FirstJobStep {Number = 1}, jobId);
-            var initialQueueLength = await queue.GetQueueLength(jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 1});
+            var initialQueueLength = await queue.GetQueueLength();
 
             await jobManager.StopJob(Tenant.Id, jobId);
-            var afterStopQueueLength = await queue.GetQueueLength(jobId);
+            var afterStopQueueLength = await queue.GetQueueLength();
 
             Assert.AreEqual(1, initialQueueLength);
             Assert.AreEqual(0, afterStopQueueLength);
@@ -188,8 +188,8 @@ namespace Test.JobManagement
                     QueueTypeName = QueueType.InMemory
                 });
 
-            var queue = Nebula.GetJobQueue<FirstJobStep>(QueueType.InMemory);
-            await queue.Enqueue(new FirstJobStep {Number = 1}, jobId);
+            var queue = Nebula.JobStepSourceBuilder.BuildInMemoryJobQueue<FirstJobStep>(jobId);
+            await queue.Enqueue(new FirstJobStep {Number = 1});
 
             await jobManager.StartJob(Tenant.Id, jobId);
             await jobManager.StopJob(Tenant.Id, jobId);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -18,6 +19,8 @@ namespace Nebula
     [Contract]
     public class NebulaContext
     {
+        private JobStepSourceBuilder _jobStepSourceBuilder;
+
         public NebulaContext()
         {
             if (ComponentContext == null)
@@ -28,7 +31,12 @@ namespace Nebula
 
         public string MongoConnectionString { get; set; }
         public string RedisConnectionString { get; set; }
-        
+
+        public JobStepSourceBuilder JobStepSourceBuilder =>
+            _jobStepSourceBuilder ?? (_jobStepSourceBuilder = ComponentContext.GetComponent<JobStepSourceBuilder>());
+
+        public List<KeyValuePair<string, object>> KafkaConfig { get; set; }
+
         public void RegisterJobProcessor(Type processor, Type stepType)
         {
             var contract = typeof(IJobProcessor<>).MakeGenericType(stepType);
@@ -51,16 +59,6 @@ namespace Nebula
         public void RegisterJobQueue(Type jobQueue, string queueTypeName)
         {
             ComponentContext.Register(typeof(IJobStepSource<>), queueTypeName, jobQueue);
-        }
-
-        public IJobQueue<TJobStep> GetJobQueue<TJobStep>(string queueTypeName) where TJobStep : IJobStep
-        {
-            return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>), queueTypeName) as IJobQueue<TJobStep>;
-        }
-
-        public IDelayedJobQueue<TJobStep> GetDelayedJobQueue<TJobStep>(string queueTypeName) where TJobStep : IJobStep
-        {
-            return ComponentContext.GetComponent(typeof(IJobStepSource<TJobStep>), queueTypeName) as IDelayedJobQueue<TJobStep>;
         }
 
         public IJobManager GetJobManager()

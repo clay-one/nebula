@@ -18,3 +18,11 @@ build:
   publish_nuget: true
   publish_nuget_symbols: true
   verbosity: minimal
+test:
+  assemblies:
+    only:
+      - Test.dll
+
+  categories:
+    except:
+      - localTest

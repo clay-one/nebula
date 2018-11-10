@@ -13,41 +13,47 @@ namespace Nebula.Queue.Implementation
     [Contract]
     public class DelayedJobQueue<TItem> : IDelayedJobQueue<TItem> where TItem : IJobStep
     {
+        private string _jobId;
+
         [ComponentPlug]
         public IRedisConnectionManager RedisManager { get; set; }
 
-        public Task EnsureJobSourceExists(string jobId = null)
+        public void Initialize(string jobId = null)
+        {
+            _jobId = jobId;
+        }
+
+        public Task EnsureJobSourceExists()
         {
             return Task.CompletedTask;
         }
 
-        public async Task<bool> Any(string jobId = null)
+        public async Task<bool> Any()
         {
-            var queueLength = await RedisManager.GetDatabase().SortedSetLengthAsync(GetRedisKey(jobId));
+            var queueLength = await RedisManager.GetDatabase().SortedSetLengthAsync(_jobId);
             return queueLength > 0;
         }
 
-        public async Task Purge(string jobId = null)
+        public async Task Purge()
         {
-            await RedisManager.GetDatabase().KeyDeleteAsync(GetRedisKey(jobId));
+            await RedisManager.GetDatabase().KeyDeleteAsync(_jobId);
         }
 
-        public async Task<TItem> GetNext(string jobId = null)
+        public async Task<TItem> GetNext()
         {
             var now = DateTime.UtcNow.Ticks;
-            string serialized = await RedisManager.GetDatabase().SortedSetPopAsync(GetRedisKey(jobId), now);
+            string serialized = await RedisManager.GetDatabase().SortedSetPopAsync(_jobId, now);
             return serialized.FromJson<TItem>();
         }
 
-        public async Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize, string jobId = null)
+        public async Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize)
         {
             var now = DateTime.UtcNow.Ticks;
 
-            var redisKey = GetRedisKey(jobId);
             var redisDb = RedisManager.GetDatabase();
             var tasks = Enumerable
                 .Range(1, maxBatchSize)
-                .Select(i => redisDb.SortedSetPopAsync(redisKey, now));
+                .Select(i => redisDb.SortedSetPopAsync(_jobId, now));
 
             var results = await Task.WhenAll(tasks);
             return results
@@ -56,25 +62,19 @@ namespace Nebula.Queue.Implementation
                 .Select(s => s.FromJson<TItem>());
         }
 
-        public async Task EnqueueBatch(IEnumerable<Tuple<TItem, DateTime>> items, string jobId = null)
+        public async Task EnqueueBatch(IEnumerable<Tuple<TItem, DateTime>> items)
         {
-            var redisKey = GetRedisKey(jobId);
             var redisDb = RedisManager.GetDatabase();
             var tasks = items.Select(item =>
-                redisDb.SortedSetAddAsync(redisKey, item.Item1.ToJson(), item.Item2.Ticks));
+                redisDb.SortedSetAddAsync(_jobId, item.Item1.ToJson(), item.Item2.Ticks));
             await Task.WhenAll(tasks);
         }
 
-        public async Task EnqueueBatch(IEnumerable<Tuple<TItem, TimeSpan>> items, string jobId = null)
+        public async Task EnqueueBatch(IEnumerable<Tuple<TItem, TimeSpan>> items)
         {
             var now = DateTime.UtcNow;
             var steps = items.Select(item => new Tuple<TItem, DateTime>(item.Item1, now + item.Item2)).ToList();
-            await EnqueueBatch(steps, jobId);
-        }
-
-        private string GetRedisKey(string jobId)
-        {
-            return "job_" + (string.IsNullOrEmpty(jobId) ? typeof(TItem).Name : jobId);
+            await EnqueueBatch(steps);
         }
     }
 }

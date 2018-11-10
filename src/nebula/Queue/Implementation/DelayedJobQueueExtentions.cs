@@ -9,33 +9,33 @@ namespace Nebula.Queue.Implementation
     public static class DelayedJobQueueExtentions
     {
         public static async Task Enqueue<TItem>(this IDelayedJobQueue<TItem> delayedQueue, TItem item,
-            DateTime processTime, string jobId = null) where TItem : IJobStep
+            DateTime processTime) where TItem : IJobStep
         {
             var step = new Tuple<TItem, DateTime>(item, processTime);
-            await delayedQueue.EnqueueBatch(step.Yield(), jobId);
+            await delayedQueue.EnqueueBatch(step.Yield());
         }
 
         public static async Task Enqueue<TItem>(this IDelayedJobQueue<TItem> delayedQueue, TItem item,
-            TimeSpan delay, string jobId = null) where TItem : IJobStep
+            TimeSpan delay) where TItem : IJobStep
         {
             var step = new Tuple<TItem, TimeSpan>(item, delay);
-            await delayedQueue.EnqueueBatch(step.Yield(), jobId);
+            await delayedQueue.EnqueueBatch(step.Yield());
         }
 
         public static async Task EnqueueBatch<TItem>(this IDelayedJobQueue<TItem> delayedQueue,
-            IEnumerable<TItem> items, DateTime processTime, string jobId = null) where TItem : IJobStep
+            IEnumerable<TItem> items, DateTime processTime) where TItem : IJobStep
         {
             var steps = items.Select(item => new Tuple<TItem, DateTime>(item, processTime)).ToList();
 
-            await delayedQueue.EnqueueBatch(steps, jobId);
+            await delayedQueue.EnqueueBatch(steps);
         }
 
         public static async Task EnqueueBatch<TItem>(this IDelayedJobQueue<TItem> delayedQueue,
-            IEnumerable<TItem> items, TimeSpan delay, string jobId = null) where TItem : IJobStep
+            IEnumerable<TItem> items, TimeSpan delay) where TItem : IJobStep
         {
             var steps = items.Select(item => new Tuple<TItem, TimeSpan>(item, delay)).ToList();
 
-            await delayedQueue.EnqueueBatch(steps, jobId);
+            await delayedQueue.EnqueueBatch(steps);
         }
     }
 }
