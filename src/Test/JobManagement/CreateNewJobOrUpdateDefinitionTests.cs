@@ -56,7 +56,7 @@ namespace Test.JobManagement
             await jobManager.CreateNewJobOrUpdateDefinition<FirstJobStep>(Tenant.Id,
                 configuration: new JobConfigurationData {QueueTypeName = QueueTypes.FirstJobQueue });
 
-            var queue = Nebula.GetJobQueue<FirstJobStep>(QueueTypes.FirstJobQueue) as FirstJobQueue<FirstJobStep>;
+            var queue = Nebula.JobStepSourceBuilder.BuildJobStepSource<FirstJobStep>(QueueTypes.FirstJobQueue) as FirstJobQueue<FirstJobStep>;
 
             Assert.IsNotNull(queue);
             Assert.IsTrue(queue.QueueExistenceChecked);

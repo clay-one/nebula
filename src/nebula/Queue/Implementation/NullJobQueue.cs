@@ -9,68 +9,48 @@ namespace Nebula.Queue.Implementation
     [IgnoredOnAssemblyRegistration]
     public class NullJobQueue<TItem> : IJobQueue<TItem> where TItem : IJobStep
     {
-        public Task<long> GetQueueLength(string jobId = null)
+        public void Initialize(string jobId = null)
+        {
+        }
+
+        public Task<long> GetQueueLength()
         {
             return Task.FromResult(0L);
         }
 
-        public Task Enqueue(TItem item, string jobId = null)
+        public Task Enqueue(TItem item)
         {
             return Task.CompletedTask;
         }
 
-        public Task EnqueueBatch(IEnumerable<TItem> items, string jobId = null)
+        public Task EnqueueBatch(IEnumerable<TItem> items)
         {
             return Task.CompletedTask;
         }
 
-        public Task EnsureJobSourceExists(string jobId = null)
+        public Task EnsureJobSourceExists()
         {
             return Task.CompletedTask;
         }
 
-        public Task<bool> Any(string jobId = null)
+        public Task<bool> Any()
         {
             return Task.FromResult(false);
         }
 
-        public Task Purge(string jobId = null)
+        public Task Purge()
         {
             return Task.CompletedTask;
         }
 
-        public Task<TItem> GetNext(string jobId = null)
+        public Task<TItem> GetNext()
         {
             return Task.FromResult(default(TItem));
         }
 
-        public Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize, string jobId = null)
+        public Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize)
         {
             return Task.FromResult(Enumerable.Empty<TItem>());
         }
-
-        #region Obsolete members
-
-        public Task EnsureJobQueueExists(string jobId = null)
-        {
-            return EnsureJobSourceExists(jobId);
-        }
-
-        public Task PurgeQueueContents(string jobId = null)
-        {
-            return Purge(jobId);
-        }
-
-        public Task<TItem> Dequeue(string jobId = null)
-        {
-            return GetNext(jobId);
-        }
-
-        public Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)
-        {
-            return GetNextBatch(maxBatchSize, jobId);
-        }
-
-        #endregion
     }
 }

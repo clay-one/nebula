@@ -61,6 +61,9 @@ namespace Nebula.Job.Runner
         [ComponentPlug]
         public IBackgroundTaskScheduler BackgroundTaskScheduler { get; set; }
 
+        [ComponentPlug]
+        public JobStepSourceBuilder JobStepSourceBuilder { get; set; }
+
         [CompositionConstructor]
         public JobRunner(IComposer composer, IJobProcessor<TJobStep> processor, IJobStore jobStore,
             IJobRunnerManager jobRunnerManager, JobStatisticsCalculator statistics, IJobNotification jobNotification)
@@ -153,10 +156,10 @@ namespace Nebula.Job.Runner
         {
             if (_jobData.Configuration.IsIndefinite)
                 return false;
+            
+            var jobStepSource = JobStepSourceBuilder.BuildJobStepSource<TJobStep>(_jobData.Configuration.QueueTypeName, _jobData.JobId);
 
-            var jobStepSource = _composer.GetComponent<IJobStepSource<TJobStep>>(_jobData.Configuration.QueueTypeName);
-
-            if (await jobStepSource.Any(_jobId))
+            if (await jobStepSource.Any())
                 return false;
 
             // JobRunnerManager always runs preprocessor tasks before running a task. So, it will siffice
@@ -416,10 +419,10 @@ namespace Nebula.Job.Runner
                 _statistics.ReportDequeueAttempt();
 
                 var nextBatchSize = Math.Min(throttledBatchSize, _jobData.Configuration.MaxBatchSize);
-
-                var queue = _composer.GetComponent<IJobStepSource<TJobStep>>(_jobData.Configuration.QueueTypeName);
-
-                steps = (await queue.GetNextBatch(nextBatchSize, _jobId)).SafeToList();
+                
+                var queue = JobStepSourceBuilder.BuildJobStepSource<TJobStep>(_jobData.Configuration.QueueTypeName, _jobData.JobId);
+                 
+                steps = (await queue.GetNextBatch(nextBatchSize)).SafeToList();
                 if (steps == null || steps.Count <= 0)
                 {
                     Log.Debug($"Job runner {_jobId} - There's no more work to do");

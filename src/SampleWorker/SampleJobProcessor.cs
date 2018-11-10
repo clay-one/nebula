@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Nebula;
 using Nebula.Queue;
@@ -19,6 +20,11 @@ namespace SampleWorker
 
         public async Task<JobProcessingResult> Process(List<SampleJobStep> items)
         {
+            Console.WriteLine($"processing {items.Count} items");
+            foreach (var item in items)
+            {
+                Console.WriteLine($"processing item: {item.Number}");
+            }
             return new JobProcessingResult();
         }
 
