@@ -11,6 +11,7 @@ namespace Nebula.Job
         bool IsProcessRunning { get; }
         bool IsProcessStopping { get; }
         bool IsProcessTerminated { get; }
+        bool IsProcessStalled { get;}
         void Initialize(JobData jobData);
         Task<bool> CheckHealth();
         void StopRunner();

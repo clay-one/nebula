@@ -128,7 +128,7 @@ namespace Nebula.Job.Runner
 
         private bool ShouldProcessStop => _lastStatus.State == JobState.Stopped;
 
-        private bool IsProcessStalled
+        public bool IsProcessStalled
         {
             get
             {
