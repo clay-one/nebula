@@ -1,36 +1,28 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Http;
-using ComposerCore.Attributes;
 using hydrogen.General.Collections;
-using Nebula.Controllers.Dto;
+using Microsoft.AspNetCore.Mvc;
 using Nebula.Job;
 using Nebula.Multitenancy;
 using Nebula.Storage;
 using Nebula.Storage.Model;
+using Nebula.Web.Controllers.Dto;
 
-namespace Nebula.Controllers
+namespace Nebula.Web.Controllers
 {
-    [Contract]
-    [Component]
-    [ComponentCache(null)]
-    public class JobInfoController : ApiControllerBase
+    [ApiController]
+    public class JobInfoController : ControllerBase
     {
         // GET	/jobs/list	-B, SAFE	Get the list of running / pending / recently finished jobs
-        // GET	/jobs/j/:j	-B, SAFE Enquiry the status / result of an asynchronous operation, using the ID returned when starting the job
+        // GET	/jobs/j/:j	-B, SAFE    Enquiry the status / result of an asynchronous operation, using the ID returned when starting the job
 
-        [ComponentPlug]
+
         public IJobStore JobStore { get; set; }
-
-        [ComponentPlug]
         public IJobManager JobManager { get; set; }
-
-        [ComponentPlug]
         public ITenantProvider Tenant { get; set; }
 
-        [HttpGet]
-        [Route("jobs/list")]
-        public async Task<IHttpActionResult> GetJobList(string tenantId)
+        [HttpGet("jobs/list")]
+        public async Task<IActionResult> GetJobList(string tenantId)
         {
             var allJobs = await JobStore.LoadAll(tenantId);
             return Ok(new GetJobListResponse
@@ -39,13 +31,14 @@ namespace Nebula.Controllers
             });
         }
 
-        [HttpGet]
-        [Route("jobs/j/{jobId}")]
-        public async Task<IHttpActionResult> GetJobStatus( string jobId)
+        [HttpGet("jobs/j/{jobId}")]
+        public async Task<IActionResult> GetJobStatus(string jobId)
         {
             var jobData = await JobStore.Load(Tenant.Id, jobId);
             if (jobData == null)
+            {
                 return NotFound();
+            }
 
             var result = ToGetJobStatusResponse(jobData);
 
