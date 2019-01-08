@@ -34,7 +34,7 @@ namespace Nebula.Job.Implementation
             var runnerIds = _runners.Keys.ToList();
 
             var jobIdsToStart = jobIds.Except(runnerIds);
-            
+
             foreach (var jobId in jobIdsToStart)
             {
                 await CheckHealthOrCreateRunner(jobId);
@@ -57,9 +57,9 @@ namespace Nebula.Job.Implementation
                         continue;
                     }
 
-                    if (await runner.CheckHealth()) 
+                    if (await runner.CheckHealth())
                         continue;
-                    
+
                     await RestartRunner(runner.JobId);
                 }
                 catch (Exception)
@@ -74,7 +74,7 @@ namespace Nebula.Job.Implementation
             var runner = await GetOrCreateRunner(jobId);
             if (runner == null)
                 return;
-            
+
             if (!await runner.CheckHealth())
                 await RestartRunner(jobId);
         }
@@ -107,7 +107,7 @@ namespace Nebula.Job.Implementation
             // Before loading data from store, check if the runner exists in memory
             if (_runners.TryGetValue(jobId, out var jobRunner))
                 return jobRunner;
-            
+
             var jobData = await JobStore.LoadFromAnyTenant(jobId);
             if (jobData.Status.State < JobState.InProgress || jobData.Status.State >= JobState.Completed)
                 return null;
@@ -117,7 +117,7 @@ namespace Nebula.Job.Implementation
                 // Make sure preprocessor jobs are running before creating this runner
                 await GetOrCreateRunner(preJobId);
             }
-            
+
             return _runners.GetOrAdd(jobId, s =>
             {
                 try
@@ -132,35 +132,36 @@ namespace Nebula.Job.Implementation
                     var newRunner = Composer.GetComponent<FaultyJobRunner>()
                         .SetFault($"Fatal exception of type {e.GetType().Name} during runner initialization. " +
                                   $"Message: {e.Message}", e);
-                    
+
                     newRunner.Initialize(jobData);
                     return newRunner;
                 }
             });
         }
-        
+
         private IJobRunner BuildNewJobRunner(JobData jobData)
         {
             var stepType = Type.GetType(jobData.JobStepType);
             if (stepType == null)
                 return Composer.GetComponent<FaultyJobRunner>()
                     .SetFault($"Type '{jobData.JobStepType}' could not be loaded.");
-            
+
             if (!(typeof(IJobStep)).IsAssignableFrom(stepType))
                 return Composer.GetComponent<FaultyJobRunner>()
                     .SetFault($"Type '{jobData.JobStepType}' should be a subclass of {nameof(IJobStep)}.");
-            
+
             var contract = typeof(IJobRunner<>).MakeGenericType(stepType);
-            if(!(Composer.GetComponent(contract) is IJobRunner jobRunner))
+            if (!(Composer.GetComponent(contract) is IJobRunner jobRunner))
                 return Composer.GetComponent<FaultyJobRunner>()
                     .SetFault($"Composer did not return an appropriate result for type '{jobData.JobStepType}'");
 
             return jobRunner;
         }
-        
+
         private async Task RestartRunner(string jobId)
         {
             // TODO
+            await Task.CompletedTask;
         }
 
         private void RemoveRunnerFromList(string jobId)

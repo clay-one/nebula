@@ -51,7 +51,7 @@ namespace Nebula.Worker
                         Composer.GetComponent<IJobRunnerManager>().CheckHealthOfAllRunners().GetAwaiter()
                             .GetResult();
                     }
-                    catch (Exception e)
+                    catch
                     {
                         // TODO: Log exception
                     }
