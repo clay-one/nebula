@@ -14,7 +14,7 @@ namespace Test.SampleJob.FirstJob
 
         public async Task<JobProcessingResult> Process(List<FirstJobStep> items)
         {
-            return new JobProcessingResult();
+            return await Task.FromResult(new JobProcessingResult());
         }
 
         public Task<long> GetTargetQueueLength()

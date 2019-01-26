@@ -10,12 +10,8 @@ namespace SampleWorker
 {
     public class SampleJobProcessor : IFinalizableJobProcessor<SampleJobStep>
     {
-        private static int _index;
-        private NebulaContext _nebulaContext;
-
         public void Initialize(JobData jobData, NebulaContext nebulaContext)
         {
-            _nebulaContext = nebulaContext;
         }
 
         public async Task<JobProcessingResult> Process(List<SampleJobStep> items)
@@ -25,7 +21,7 @@ namespace SampleWorker
             {
                 Console.WriteLine($"processing item: {item.Number}");
             }
-            return new JobProcessingResult();
+            return await Task.FromResult(new JobProcessingResult());
         }
 
         public Task<long> GetTargetQueueLength()
@@ -35,7 +31,7 @@ namespace SampleWorker
 
         public async Task JobCompleted()
         {
-            
+            await Task.CompletedTask;
         }
     }
 }

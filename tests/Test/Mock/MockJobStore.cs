@@ -22,7 +22,7 @@ namespace Test.Mock
         public async Task<JobData> Load(string tenantId, string jobId)
         {
             _jobs.TryGetValue(tenantId, out var value);
-            return value?[jobId];
+            return await Task.FromResult(value?[jobId]);
         }
 
         public async Task<JobStatusData> LoadStatus(string tenantId, string jobId)
@@ -34,7 +34,8 @@ namespace Test.Mock
 
         public async Task<JobData> LoadFromAnyTenant(string jobId)
         {
-            return _jobs.Values.Where(a => a.ContainsKey(jobId)).Select(datas => datas[jobId]).SingleOrDefault();
+            var jobData = _jobs.Values.Where(a => a.ContainsKey(jobId)).Select(data => data[jobId]).SingleOrDefault();
+            return await Task.FromResult(jobData);
         }
 
         public Task<List<string>> LoadAllRunnableIdsFromAnyTenant()
@@ -49,7 +50,7 @@ namespace Test.Mock
 
             _jobs[jobData.TenantId].Add(jobData.JobId, jobData);
 
-            return jobData;
+            return await Task.FromResult(jobData);
         }
 
         public Task<bool> UpdateState(string tenantId, string jobId, JobState? expectedState, JobState newState)
