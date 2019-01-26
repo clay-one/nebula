@@ -17,7 +17,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleJob", "samples\Sample
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleWorker", "samples\SampleWorker\SampleWorker.csproj", "{BCC210C4-66F5-4C7B-A8B0-69EC1B7ED780}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nebula.Web", "src\Nebula.Web\Nebula.Web.csproj", "{D172AD52-B6F1-4B1D-9636-332CBA58971E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nebula.Web", "src\Nebula.Web\Nebula.Web.csproj", "{D172AD52-B6F1-4B1D-9636-332CBA58971E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A73ACC4D-754D-4247-87C7-D044521A37DE}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		appveyor.ci.yml = appveyor.ci.yml
+		appveyor.release.yml = appveyor.release.yml
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
