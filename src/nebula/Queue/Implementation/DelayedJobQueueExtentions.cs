@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using hydrogen.General.Utils;
+using Hydrogen.General.Utils;
 
 namespace Nebula.Queue.Implementation
 {

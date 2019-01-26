@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using hydrogen.General.Text;
+using Hydrogen.General.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nebula.Queue;
 using Nebula.Queue.Implementation;

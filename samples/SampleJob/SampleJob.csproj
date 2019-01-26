@@ -14,8 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ServiceStack.Text" Version="5.2.0" />
-    <PackageReference Include="ServiceStack.Text.Core" Version="5.2.0" />
+    <PackageReference Include="ServiceStack.Text" Version="5.4.0" />
+    <PackageReference Include="ServiceStack.Text.Core" Version="5.4.0" />
   </ItemGroup>
 
   <ItemGroup>
