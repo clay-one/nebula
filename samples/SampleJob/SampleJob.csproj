@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,12 +14,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ServiceStack.Text" Version="5.2.0" />
-    <PackageReference Include="ServiceStack.Text.Core" Version="5.2.0" />
+    <PackageReference Include="ServiceStack.Text" Version="5.4.0" />
+    <PackageReference Include="ServiceStack.Text.Core" Version="5.4.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\nebula\Nebula.csproj" />
+    <ProjectReference Include="..\..\src\nebula\Nebula.csproj" />
   </ItemGroup>
 
   <ItemGroup>
