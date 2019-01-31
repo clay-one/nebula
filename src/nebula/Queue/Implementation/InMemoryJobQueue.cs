@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ComposerCore.Attributes;
 using ComposerCore.Cache;
-using hydrogen.General.Collections;
+using Hydrogen.General.Collections;
 
 namespace Nebula.Queue.Implementation
 {

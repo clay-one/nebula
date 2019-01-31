@@ -21,20 +21,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ClayOne.Hydrogen.General" Version="0.0.14" />
+    <PackageReference Include="ClayOne.Hydrogen.General" Version="0.0.17" />
     <PackageReference Include="ComposerCore" Version="2.0.12" />
-    <PackageReference Include="Confluent.Kafka" Version="0.11.5" />
+    <PackageReference Include="Confluent.Kafka" Version="0.11.6" />
     <PackageReference Include="log4net" Version="2.0.8" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.6" />
-    <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
-    <PackageReference Include="ServiceStack.Text.Core" Version="5.1.0" />
-    <PackageReference Include="StackExchange.Redis" Version="1.2.6" />
+    <PackageReference Include="MongoDB.Driver" Version="2.7.3" />
+    <PackageReference Include="ServiceStack.Text.Core" Version="5.4.0" />
+    <PackageReference Include="StackExchange.Redis" Version="2.0.519" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="System.Configuration">
-      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.1\System.Configuration.dll</HintPath>
-    </Reference>
-  </ItemGroup>
 
 </Project>

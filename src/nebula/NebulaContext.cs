@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using ComposerCore;
@@ -54,6 +55,20 @@ namespace Nebula
                 throw new ArgumentException("Processor should implement IJobProcessor<>");
 
             ComponentContext.Register(contract, new PreInitializedComponentFactory(processor));
+        }
+
+
+        public void RegisterJobProcessor(Expression<Func<object>> processorInstanceProvider, Type stepType)
+        {
+            var contract = typeof(IJobProcessor<>).MakeGenericType(stepType);
+
+            var isTypeCorrect = processorInstanceProvider.Body.Type.GetInterfaces().Any(x =>
+                x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IJobProcessor<>));
+
+            if (!isTypeCorrect)
+                throw new ArgumentException("Processor should implement IJobProcessor<>");
+
+            ComponentContext.Register(contract, new ExternalProviderComponentFactory(processorInstanceProvider.Compile()));
         }
 
         public void RegisterJobQueue(Type jobQueue, string queueTypeName)

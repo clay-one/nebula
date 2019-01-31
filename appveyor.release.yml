@@ -62,7 +62,7 @@ dotnet_csproj:
   file_version: $(CLAY_ONE_ASSEMBLY_VERSION)
   informational_version: $(CLAY_ONE_ASSEMBLY_VERSION)
 before_build:
-- cmd: nuget restore src\nebula.sln
+- cmd: nuget restore Nebula.sln
 - nuget install redis-64 -excludeversion
 - redis-64\tools\redis-server.exe --service-install
 - redis-64\tools\redis-server.exe --service-start
