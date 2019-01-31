@@ -15,18 +15,18 @@ namespace Nebula.Job.Implementation
     [Component]
     internal class DefaultJobRunnerManager : IJobRunnerManager
     {
-        [ComponentPlug]
-        public IJobStore JobStore { get; set; }
-
-        [ComponentPlug]
-        public IComposer Composer { get; set; }
-
         private readonly ConcurrentDictionary<string, IJobRunner> _runners;
 
         public DefaultJobRunnerManager()
         {
             _runners = new ConcurrentDictionary<string, IJobRunner>();
         }
+
+        [ComponentPlug]
+        public IJobStore JobStore { get; set; }
+
+        [ComponentPlug]
+        public IComposer Composer { get; set; }
 
         public async Task CheckStoreJobs()
         {
@@ -36,15 +36,12 @@ namespace Nebula.Job.Implementation
             var jobIdsToStart = jobIds.Except(runnerIds);
 
             foreach (var jobId in jobIdsToStart)
-            {
                 await CheckHealthOrCreateRunner(jobId);
-            }
         }
 
         public async Task CheckHealthOfAllRunners()
         {
             foreach (var runner in _runners.Values.ToList())
-            {
                 try
                 {
                     if (runner.IsProcessTerminated)
@@ -66,7 +63,6 @@ namespace Nebula.Job.Implementation
                 {
                     // TODO: Log
                 }
-            }
         }
 
         public async Task CheckHealthOrCreateRunner(string jobId)
@@ -82,9 +78,7 @@ namespace Nebula.Job.Implementation
         public void StopAllRunners()
         {
             foreach (var runner in _runners.Values.ToList())
-            {
                 runner.StopRunner();
-            }
         }
 
         public bool IsJobRunnerActive(string jobId)
@@ -113,10 +107,8 @@ namespace Nebula.Job.Implementation
                 return null;
 
             foreach (var preJobId in jobData.Configuration.PreprocessorJobIds.EmptyIfNull())
-            {
                 // Make sure preprocessor jobs are running before creating this runner
                 await GetOrCreateRunner(preJobId);
-            }
 
             return _runners.GetOrAdd(jobId, s =>
             {
@@ -146,7 +138,7 @@ namespace Nebula.Job.Implementation
                 return Composer.GetComponent<FaultyJobRunner>()
                     .SetFault($"Type '{jobData.JobStepType}' could not be loaded.");
 
-            if (!(typeof(IJobStep)).IsAssignableFrom(stepType))
+            if (!typeof(IJobStep).IsAssignableFrom(stepType))
                 return Composer.GetComponent<FaultyJobRunner>()
                     .SetFault($"Type '{jobData.JobStepType}' should be a subclass of {nameof(IJobStep)}.");
 
@@ -160,8 +152,24 @@ namespace Nebula.Job.Implementation
 
         private async Task RestartRunner(string jobId)
         {
-            // TODO
-            await Task.CompletedTask;
+            var runner = await GetOrCreateRunner(jobId);
+            if (runner == null)
+                return;
+
+            if (runner.IsProcessStalled)
+            {
+                await KillRunner(jobId);
+                await GetOrCreateRunner(jobId);
+            }
+        }
+
+        private async Task KillRunner(string jobId)
+        {
+            var runner = await GetOrCreateRunner(jobId);
+            if (runner == null)
+                return;
+
+            _runners.TryRemove(jobId, out var value);
         }
 
         private void RemoveRunnerFromList(string jobId)
