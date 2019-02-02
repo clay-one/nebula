@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nebula.Controllers.Dto
+namespace Nebula.Web.Controllers.Dto
 {
     public class GetJobListResponseItem
     {

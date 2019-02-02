@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Nebula.Controllers.Dto
+namespace Nebula.Web.Controllers.Dto
 {
     public class GetJobStatusResponse
     {

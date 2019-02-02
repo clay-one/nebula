@@ -58,7 +58,7 @@ namespace Nebula.Queue.Implementation
         {
             var positions = _consumer.Position(new List<TopicPartition> {new TopicPartition(_topic, 0)});
 
-            return positions[0].Offset.Value > 0;
+            return await Task.FromResult(positions[0].Offset.Value > 0);
         }
 
         public async Task Purge()
@@ -81,7 +81,7 @@ namespace Nebula.Queue.Implementation
             if (!_consumer.Consume(out message, TimeSpan.FromMilliseconds(100)))
                 return default(TItem);
 
-            return message.Value.FromJson<TItem>();
+            return await Task.FromResult(message.Value.FromJson<TItem>());
         }
 
         public async Task<IEnumerable<TItem>> GetNextBatch(int maxBatchSize)
