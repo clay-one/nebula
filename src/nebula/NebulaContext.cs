@@ -62,8 +62,24 @@ namespace Nebula
         {
             var contract = typeof(IJobProcessor<>).MakeGenericType(stepType);
 
-            var isTypeCorrect = processorInstanceProvider.Body.Type.GetInterfaces().Any(x =>
-                x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IJobProcessor<>));
+            bool isTypeCorrect;
+
+            if (processorInstanceProvider.Body.Type.IsInterface)
+            {
+                isTypeCorrect = processorInstanceProvider
+                    .Body
+                    .Type
+                    .GetGenericTypeDefinition()
+                    .IsAssignableFrom(typeof(IJobProcessor<>));
+            }
+            else
+            {
+                isTypeCorrect = processorInstanceProvider
+                    .Body
+                    .Type
+                    .GetInterfaces()
+                    .Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IJobProcessor<>));
+            }
 
             if (!isTypeCorrect)
                 throw new ArgumentException("Processor should implement IJobProcessor<>");
