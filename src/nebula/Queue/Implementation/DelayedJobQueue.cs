@@ -9,8 +9,9 @@ using ServiceStack;
 
 namespace Nebula.Queue.Implementation
 {
-    [Component]
     [Contract]
+    [Component]
+    [ComponentCache(null)]
     public class DelayedJobQueue<TItem> : IDelayedJobQueue<TItem> where TItem : IJobStep
     {
         private string _jobId;
