@@ -24,6 +24,7 @@ namespace Test.JobManagement
             _sp = new ServiceCollection()
                 .AddScoped<ScopedService1>()
                 .AddTransient<TransientService1>()
+                .AddTransient<IJobProcessor<FirstJobStep>, TransientProcessor1>()
                 .AddTransient<TransientProcessor1>()
                 .BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = false });
         }
@@ -34,6 +35,20 @@ namespace Test.JobManagement
             Nebula.RegisterJobQueue(typeof(InMemoryJobQueue<FirstJobStep>), QueueType.InMemory);
 
             Nebula.RegisterJobProcessor(() => _sp.GetService<TransientProcessor1>(),
+                typeof(FirstJobStep));
+
+            var jobProcessor1 = Nebula.ComponentContext.GetComponent<IJobProcessor<FirstJobStep>>();
+            var jobProcessor2 = Nebula.ComponentContext.GetComponent<IJobProcessor<FirstJobStep>>();
+
+            Assert.AreNotEqual(jobProcessor2, jobProcessor1);
+        }
+
+        [TestMethod]
+        public void JobProcessor_InstanceProvider_ReturnsInterface_ShouldReturnDifferentInstances()
+        {
+            Nebula.RegisterJobQueue(typeof(InMemoryJobQueue<FirstJobStep>), QueueType.InMemory);
+
+            Nebula.RegisterJobProcessor(() => _sp.GetService<IJobProcessor<FirstJobStep>>(),
                 typeof(FirstJobStep));
 
             var jobProcessor1 = Nebula.ComponentContext.GetComponent<IJobProcessor<FirstJobStep>>();

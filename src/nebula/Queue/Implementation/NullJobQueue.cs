@@ -6,6 +6,7 @@ using ComposerCore.Attributes;
 namespace Nebula.Queue.Implementation
 {
     [Component]
+    [ComponentCache(null)]
     [IgnoredOnAssemblyRegistration]
     public class NullJobQueue<TItem> : IJobQueue<TItem> where TItem : IJobStep
     {
