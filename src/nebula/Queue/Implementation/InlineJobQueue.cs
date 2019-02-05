@@ -7,6 +7,7 @@ using Hydrogen.General.Utils;
 namespace Nebula.Queue.Implementation
 {
     [Component]
+    [ComponentCache(null)]
     [IgnoredOnAssemblyRegistration]
     public class InlineJobQueue<TItem> : IJobQueue<TItem> where TItem : IJobStep
     {

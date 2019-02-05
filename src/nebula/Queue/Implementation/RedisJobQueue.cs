@@ -9,6 +9,7 @@ using ServiceStack;
 namespace Nebula.Queue.Implementation
 {
     [Component]
+    [ComponentCache(null)]
     [IgnoredOnAssemblyRegistration]
     public class RedisJobQueue<TItem> : IJobQueue<TItem> where TItem : IJobStep
     {
